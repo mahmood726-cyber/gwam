@@ -22,7 +22,7 @@ from typing import Any
 
 import requests
 
-from gwam_utils import normal_quantile, parse_bool, safe_float, sanitize_csv_cell
+from gwam_utils import normal_quantile, parse_bool, phrase_in_text, safe_float, sanitize_csv_cell
 
 API_BASE = "https://clinicaltrials.gov/api/v2/studies"
 
@@ -144,11 +144,10 @@ def fetch_results_section(nct_id: str, timeout_sec: float) -> dict | None:
 
 
 def _match_outcome(title: str, keywords: list[str]) -> bool:
-    """Check if outcome title matches any keyword (case-insensitive)."""
+    """Check if outcome title matches any keyword (word-boundary matching)."""
     if not keywords:
         return True
-    title_lower = title.lower()
-    return any(kw.lower() in title_lower for kw in keywords)
+    return any(phrase_in_text(kw, title) for kw in keywords)
 
 
 def _build_denom_map(denoms: list[dict]) -> dict[str, int]:

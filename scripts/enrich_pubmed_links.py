@@ -87,6 +87,8 @@ def fetch_pubmed_metadata(
         params["api_key"] = api_key
 
     xml_text = get_text_with_retry(session, url=EFETCH_URL, params=params, timeout=60)
+    if len(xml_text) > 50_000_000:  # 50 MB safety cap
+        raise ValueError(f"PubMed XML response too large ({len(xml_text)} bytes); refusing to parse.")
     root = ET.fromstring(xml_text)
 
     out: dict[str, dict[str, str]] = {}

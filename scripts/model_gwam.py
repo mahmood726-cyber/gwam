@@ -40,7 +40,7 @@ def parse_args() -> argparse.Namespace:
         default="weight_n",
         help="Column to use as study weights (default: weight_n).",
     )
-    parser.add_argument("--sim-n", type=int, default=5000, help="Monte Carlo simulation count.")
+    parser.add_argument("--sim-n", type=int, default=5000, help="Monte Carlo simulation count (max 10_000_000).")
     parser.add_argument("--ghost-mu", type=float, default=0.0, help="Mean effect for ghost studies.")
     parser.add_argument("--ghost-sd", type=float, default=0.10, help="SD for ghost effect prior/sensitivity.")
     parser.add_argument(
@@ -77,6 +77,8 @@ def quantile(values: np.ndarray, q: float) -> float:
 
 def main() -> int:
     args = parse_args()
+    if args.sim_n > 10_000_000:
+        raise ValueError(f"--sim-n={args.sim_n} exceeds maximum of 10,000,000.")
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
 
     with args.registry_csv.open("r", newline="", encoding="utf-8") as handle:
@@ -94,8 +96,18 @@ def main() -> int:
     n_with_pmid = 0
     n_results_only = 0
     n_ghost_no_pmid_results = 0
-    for row in rows:
-        weight = float(row[args.weight_column])
+    for row_idx, row in enumerate(rows, start=2):  # row 2 = first data row (after header)
+        raw_weight = row[args.weight_column]
+        try:
+            weight = float(raw_weight)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                f"Non-numeric weight '{raw_weight}' in row {row_idx}, column '{args.weight_column}'."
+            ) from exc
+        if not math.isfinite(weight) or weight <= 0:
+            raise ValueError(
+                f"Invalid weight {weight} in row {row_idx}, column '{args.weight_column}'."
+            )
         is_ghost = parse_bool(row.get("is_ghost_protocol", ""))
         has_pmid = parse_bool(row.get("has_pmid", ""))
         has_results = parse_bool(row.get("has_results", ""))
@@ -126,9 +138,9 @@ def main() -> int:
     lambda_pmid_only = w_pmid / w_total
     lambda_non_ghost = (w_pmid + w_results_only) / w_total
     if lambda_pmid_only == 0:
-        print("WARNING: lambda_pmid_only=0 — all studies are ghost/results-only. GWAM correction is undefined.")
+        print("WARNING: lambda_pmid_only=0 -- all studies are ghost/results-only. GWAM correction is undefined.")
     if lambda_non_ghost == 0:
-        print("WARNING: lambda_non_ghost=0 — all studies are ghosts. GWAM correction is undefined.")
+        print("WARNING: lambda_non_ghost=0 -- all studies are ghosts. GWAM correction is undefined.")
     mu_published = float(args.published_mu)
     mu_results_only = mu_published if args.results_only_mode == "as_observed" else float(args.results_only_mu)
     mu_gwam_null = (w_pmid * mu_published + w_results_only * mu_results_only + w_ghost * args.ghost_mu) / w_total

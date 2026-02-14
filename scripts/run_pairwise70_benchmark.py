@@ -21,7 +21,10 @@ import numpy as np
 import pandas as pd
 import pyreadr
 
-from gwam_utils import normal_cdf as _scalar_normal_cdf, normal_quantile, safe_float
+from scipy.special import ndtr as normal_cdf
+
+from gwam_utils import build_environment_metadata, normal_quantile, safe_float
+from grey_meta_v8 import GRMA
 from model_gwam_bayesian import PriorSpec, bayesian_gwam_posterior
 from simulate_gwam_vs_re import pet_peese_estimate, random_effects_dl
 
@@ -31,15 +34,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--pairwise-data-dir",
         type=Path,
-        default=Path(r"C:\Users\user\OneDrive - NHS\Documents\Pairwise70\data"),
+        required=True,
         help="Directory containing Pairwise70 .rda files.",
     )
     parser.add_argument(
         "--ctgov-covariates-csv",
         type=Path,
-        default=Path(
-            r"C:\Users\user\OneDrive - NHS\Documents\Pairwise70\analysis\transportability\ctgov_target_covariates.csv"
-        ),
+        required=True,
         help="Review-level CT.gov covariates used to build lambda proxies.",
     )
     parser.add_argument(
@@ -188,9 +189,7 @@ def parse_lambda_grid(text: str) -> list[float]:
     return values
 
 
-def normal_cdf(x: np.ndarray) -> np.ndarray:
-    """Vectorized normal CDF wrapping the canonical gwam_utils.normal_cdf."""
-    return np.vectorize(_scalar_normal_cdf)(x)
+# normal_cdf is imported from scipy.special.ndtr (truly vectorized, no Python loop)
 
 
 def extract_review_id(file_name: str) -> str:
@@ -198,9 +197,6 @@ def extract_review_id(file_name: str) -> str:
     match = re.match(r"^(CD\d+)(?:_pub\d+)?_data$", stem)
     if match:
         return match.group(1)
-    match_alt = re.match(r"^(CD\d+)_data$", stem)
-    if match_alt:
-        return match_alt.group(1)
     return stem
 
 
@@ -623,6 +619,57 @@ def flatten_subset_row(name: str, subset_summary: dict[str, Any]) -> dict[str, A
     return out
 
 
+def _build_grma_summary(results: pd.DataFrame) -> dict[str, Any]:
+    """Build GRMA vs RE comparison metrics for summary.json."""
+    grma_valid = results.loc[np.isfinite(results["mu_grma"])].copy()
+    n_grma = len(grma_valid)
+    if n_grma == 0:
+        return {"n_grma_estimable": 0}
+    abs_shift = np.abs(grma_valid["mu_grma"].values - grma_valid["mu_re"].values)
+    rel_shift = abs_shift / np.maximum(np.abs(grma_valid["mu_re"].values), 1e-9)
+    n_grma_pos_sig = int(np.sum(grma_valid["grma_positive_sig"]))
+    n_re_pos_sig_in_grma = int(np.sum(grma_valid["re_positive_sig"]))
+    n_re_to_grma_sig_drop = int(
+        np.sum(grma_valid["re_positive_sig"] & (~grma_valid["grma_positive_sig"]))
+    )
+    n_grma_to_re_sig_gain = int(
+        np.sum((~grma_valid["re_positive_sig"]) & grma_valid["grma_positive_sig"])
+    )
+    return {
+        "n_grma_estimable": n_grma,
+        "n_grma_positive_significant": n_grma_pos_sig,
+        "n_re_positive_significant_where_grma_estimable": n_re_pos_sig_in_grma,
+        "re_to_grma_significance_drops": n_re_to_grma_sig_drop,
+        "grma_to_re_significance_gains": n_grma_to_re_sig_gain,
+        "median_abs_shift_grma_vs_re": float(np.median(abs_shift)),
+        "mean_abs_shift_grma_vs_re": float(np.mean(abs_shift)),
+        "median_rel_shift_grma_vs_re": float(np.median(rel_shift)),
+        "median_w_max_grma": float(np.median(grma_valid["w_max_grma"].values)),
+        "median_n_eff_grma": float(np.median(grma_valid["n_eff_grma"].values)),
+        "correlation_grma_re": float(np.corrcoef(grma_valid["mu_grma"].values, grma_valid["mu_re"].values)[0, 1]),
+        "by_k_band": {
+            "k_3": _grma_k_band_summary(grma_valid, 3, 3),
+            "k_4_to_9": _grma_k_band_summary(grma_valid, 4, 9),
+            "k_ge_10": _grma_k_band_summary(grma_valid, 10, 999999),
+        },
+    }
+
+
+def _grma_k_band_summary(df: pd.DataFrame, k_lo: int, k_hi: int) -> dict[str, Any]:
+    sub = df.loc[(df["k"] >= k_lo) & (df["k"] <= k_hi)]
+    if len(sub) == 0:
+        return {"n": 0}
+    abs_shift = np.abs(sub["mu_grma"].values - sub["mu_re"].values)
+    return {
+        "n": int(len(sub)),
+        "median_abs_shift": float(np.median(abs_shift)),
+        "mean_abs_shift": float(np.mean(abs_shift)),
+        "correlation_grma_re": float(np.corrcoef(sub["mu_grma"].values, sub["mu_re"].values)[0, 1]),
+        "median_w_max": float(np.median(sub["w_max_grma"].values)),
+        "median_n_eff": float(np.median(sub["n_eff_grma"].values)),
+    }
+
+
 def main() -> int:
     args = parse_args()
     if not (0 < args.default_lambda_proxy <= 1):
@@ -927,6 +974,34 @@ def main() -> int:
             else:
                 mu_pet, se_pet = pet_fit
 
+            # --- GRMA (Grey Relational Meta-Analysis) ---
+            min_k_grma = 3
+            if k >= min_k_grma:
+                try:
+                    grma_obj = GRMA(effect_guard=True)
+                    grma_fit = grma_obj.fit(yi, vi)
+                    mu_grma = float(grma_fit["estimate"])
+                    # Jackknife SE: leave-one-out
+                    loo_ests = np.empty(k)
+                    for jj in range(k):
+                        idx_loo = np.concatenate([np.arange(jj), np.arange(jj + 1, k)])
+                        loo_fit = grma_obj._core(yi[idx_loo], vi[idx_loo])
+                        loo_ests[jj] = loo_fit["estimate"]
+                    loo_mean = np.mean(loo_ests)
+                    se_grma = float(np.sqrt((k - 1) / k * np.sum((loo_ests - loo_mean) ** 2)))
+                    w_max_grma = float(grma_fit["w_max"])
+                    n_eff_grma = float(grma_fit["n_eff"])
+                except Exception:
+                    mu_grma = float("nan")
+                    se_grma = float("nan")
+                    w_max_grma = float("nan")
+                    n_eff_grma = float("nan")
+            else:
+                mu_grma = float("nan")
+                se_grma = float("nan")
+                w_max_grma = float("nan")
+                n_eff_grma = float("nan")
+
             # --- Bayesian GWAM ---
             # Use the published weight from this analysis's studies and estimated ghost weight
             # from the lambda proxy. lambda = w_pub / w_total => w_total = w_pub / lambda
@@ -1016,6 +1091,10 @@ def main() -> int:
                 "tau2_ipw_re": float(tau2_ipw) if math.isfinite(tau2_ipw) else float("nan"),
                 "mu_pet_peese": float(mu_pet) if math.isfinite(mu_pet) else float("nan"),
                 "se_pet_peese": float(se_pet) if math.isfinite(se_pet) else float("nan"),
+                "mu_grma": float(mu_grma) if math.isfinite(mu_grma) else float("nan"),
+                "se_grma": float(se_grma) if math.isfinite(se_grma) else float("nan"),
+                "w_max_grma": float(w_max_grma) if math.isfinite(w_max_grma) else float("nan"),
+                "n_eff_grma": float(n_eff_grma) if math.isfinite(n_eff_grma) else float("nan"),
                 "q_sig_positive": q_sig,
                 "p_sig_assumed": float(args.p_sig),
                 "p_nonsig_calibrated": float(p_nonsig),
@@ -1103,6 +1182,12 @@ def main() -> int:
                 math.isfinite(row["mu_pet_peese"])
                 and math.isfinite(row["se_pet_peese"])
                 and ((row["mu_pet_peese"] - z_ci * row["se_pet_peese"]) > 0)
+            )
+            row["grma_positive_sig"] = bool(
+                math.isfinite(row["mu_grma"])
+                and math.isfinite(row["se_grma"])
+                and row["se_grma"] > 0
+                and ((row["mu_grma"] - z_ci * row["se_grma"]) > 0)
             )
 
             all_rows.append(row)
@@ -1225,6 +1310,7 @@ def main() -> int:
         gwam_grid_sig[str(lam)] = int(np.sum(ci_lo > 0))
 
     summary = {
+        "metadata": build_environment_metadata(),
         "pairwise_data_dir": str(args.pairwise_data_dir),
         "ctgov_covariates_csv": str(args.ctgov_covariates_csv),
         "ctgov_linkage_csv": str(args.ctgov_linkage_csv),
@@ -1232,6 +1318,7 @@ def main() -> int:
         "n_files_with_valid_binary_analyses": int(files_with_valid_binary),
         "n_analyses_estimable": n_total,
         "n_pet_peese_estimable": n_pet,
+        "n_grma_estimable": int(np.sum(np.isfinite(results["mu_grma"]))),
         "n_selection_ipw_estimable": n_ipw,
         "lambda_grid": lambda_grid,
         "assumptions": {
@@ -1297,6 +1384,7 @@ def main() -> int:
             "filtered": robust_subset,
             "delta_filtered_minus_full": robust_delta,
         },
+        "grma_comparison": _build_grma_summary(results),
         "gwam_grid_positive_significant_counts": gwam_grid_sig,
         "outputs": {
             "analysis_results_csv": str(results_path),

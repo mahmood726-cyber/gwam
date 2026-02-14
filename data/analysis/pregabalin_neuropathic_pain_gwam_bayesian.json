@@ -214,5 +214,8 @@
       "cri_width": 0.3166342953308511,
       "pr_positive": 0.0018567645031630775
     }
-  ]
+  ],
+  "metadata": {
+    "note": "Regenerate with full pipeline for updated environment metadata."
+  }
 }

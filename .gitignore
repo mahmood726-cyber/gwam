@@ -25,6 +25,11 @@ pairwise70_benchmark_smoke_methods/
 pairwise70_benchmark_smoke_methods_unclipped/
 pairwise70_benchmark_smoke_regression/
 
+# Secrets / credentials
+.env
+*.key
+credentials.*
+
 # Working notes
 plans/
 reports/

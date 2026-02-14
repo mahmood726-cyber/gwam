@@ -3,16 +3,10 @@
 
 from __future__ import annotations
 
-import sys
 import unittest
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SCRIPTS_DIR = PROJECT_ROOT / "scripts"
-if str(SCRIPTS_DIR) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS_DIR))
-
+# sys.path setup handled by conftest.py
 from build_pairwise70_ctgov_linkage_summary import (
     fuzzy_match_ctgov,
     pubmed_to_nct,
@@ -246,7 +240,8 @@ class TestFuzzyMatchCtgov(unittest.TestCase):
     @patch("build_pairwise70_ctgov_linkage_summary.requests.get")
     def test_api_failure_returns_none(self, mock_get: MagicMock) -> None:
         """API errors should return None gracefully."""
-        mock_get.side_effect = Exception("Timeout")
+        import requests as req
+        mock_get.side_effect = req.ConnectionError("Timeout")
         result = fuzzy_match_ctgov(
             condition="depression",
             intervention="escitalopram",

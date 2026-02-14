@@ -3,6 +3,10 @@
 
 The simulation uses real registry-derived study weights from one intervention
 domain. Publication bias is modeled by selective publication probabilities.
+
+Note: The IPW comparator uses *oracle* (true) publication probabilities, not
+estimated ones. This provides an idealized upper bound for what IPW could
+achieve if the selection function were perfectly known.
 """
 
 from __future__ import annotations
@@ -15,7 +19,9 @@ from pathlib import Path
 
 import numpy as np
 
-from gwam_utils import build_environment_metadata, normal_cdf as _scalar_normal_cdf, normal_quantile, parse_bool
+from scipy.special import ndtr as _array_normal_cdf
+
+from gwam_utils import build_environment_metadata, normal_quantile, parse_bool
 from model_gwam_bayesian import PriorSpec, bayesian_gwam_posterior
 
 
@@ -177,11 +183,6 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _array_normal_cdf(x: np.ndarray) -> np.ndarray:
-    """Vectorized normal CDF wrapping the canonical gwam_utils.normal_cdf."""
-    return np.vectorize(_scalar_normal_cdf)(x)
-
-
 def logistic(x: np.ndarray) -> np.ndarray:
     return 1.0 / (1.0 + np.exp(-x))
 
@@ -326,6 +327,11 @@ def simulate_one_meta(
         non_events_t = n_t - events_t
         non_events_c = n_c - events_c
 
+        # Note: Double-zero studies (both arms zero events, or both arms all events)
+        # are NOT excluded here, unlike the benchmark script.  Under the simulation's
+        # parameter range (control_event_rate >= 0.10, per-arm n >= 2), such studies
+        # are statistically negligible, and the continuity correction makes them finite.
+        #
         # Haldane-Anscombe continuity correction: apply only to studies with
         # at least one zero cell to avoid unnecessary bias toward the null.
         has_zero = (events_t == 0) | (non_events_t == 0) | (events_c == 0) | (non_events_c == 0)
@@ -355,6 +361,13 @@ def simulate_one_meta(
         return None
 
     mu_re, se_re, _ = re
+    # Oracle IPW-RE: uses the *true* (known) publication probabilities for
+    # inverse-probability weighting.  In practice these are unknown; this serves
+    # as an idealized upper-bound comparator for GWAM.  The SE from
+    # random_effects_dl uses the standard 1/sqrt(sum(w*)) formula, which does
+    # not account for the IPW multiplier and may underestimate true variance.
+    # A sandwich estimator would be more appropriate but is omitted here for
+    # comparability with the standard DL framework.
     pub_positive_sig = positive_sig[is_published]
     pub_prob = np.where(pub_positive_sig, p_sig, p_nonsig)
     pub_prob = np.maximum(pub_prob, 1e-6)
@@ -435,10 +448,10 @@ def simulate_one_meta(
         "se_gwam": se_gwam,
         "ci_gwam_lo": ci_gwam_lo,
         "ci_gwam_hi": ci_gwam_hi,
-        "mu_ipw_re": mu_ipw,
-        "se_ipw_re": se_ipw,
-        "ci_ipw_re_lo": ci_ipw_lo,
-        "ci_ipw_re_hi": ci_ipw_hi,
+        "mu_oracle_ipw_re": mu_ipw,
+        "se_oracle_ipw_re": se_ipw,
+        "ci_oracle_ipw_re_lo": ci_ipw_lo,
+        "ci_oracle_ipw_re_hi": ci_ipw_hi,
         "mu_pet_peese": mu_pet,
         "se_pet_peese": se_pet,
         "ci_pet_peese_lo": ci_pet_lo,
@@ -516,9 +529,21 @@ def load_registry_weights(
     if weight_column not in rows[0]:
         raise ValueError(f"Weight column '{weight_column}' not found in {path}.")
 
-    raw_weights = np.asarray([float(row[weight_column]) for row in rows], dtype=float)
-    if np.any(raw_weights <= 0):
-        raise ValueError("All weights must be > 0.")
+    weight_values: list[float] = []
+    for row_idx, row in enumerate(rows, start=2):
+        raw_val = row[weight_column]
+        try:
+            w = float(raw_val)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                f"Non-numeric weight '{raw_val}' in row {row_idx}, column '{weight_column}'."
+            ) from exc
+        if not math.isfinite(w) or w <= 0:
+            raise ValueError(
+                f"Invalid weight {w} in row {row_idx}, column '{weight_column}'. Must be finite and > 0."
+            )
+        weight_values.append(w)
+    raw_weights = np.asarray(weight_values, dtype=float)
 
     is_ghost = np.asarray([parse_bool(row.get("is_ghost_protocol", "")) for row in rows], dtype=bool)
     has_pmid = np.asarray([parse_bool(row.get("has_pmid", "")) for row in rows], dtype=bool)
@@ -702,6 +727,8 @@ def calibrate_p_nonsig(
 
 def main() -> int:
     args = parse_args()
+    if args.n_meta > 10_000_000:
+        raise ValueError(f"--n-meta={args.n_meta} exceeds maximum of 10,000,000.")
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
     if not (0.0 < args.control_event_rate < 1.0):
         raise ValueError("--control-event-rate must be in (0,1).")
@@ -836,10 +863,10 @@ def main() -> int:
         se_g = np.asarray([row["se_gwam"] for row in sim_rows], dtype=float)
         ci_g_lo = np.asarray([row["ci_gwam_lo"] for row in sim_rows], dtype=float)
         ci_g_hi = np.asarray([row["ci_gwam_hi"] for row in sim_rows], dtype=float)
-        mu_ipw = np.asarray([row["mu_ipw_re"] for row in sim_rows], dtype=float)
-        se_ipw = np.asarray([row["se_ipw_re"] for row in sim_rows], dtype=float)
-        ci_ipw_lo = np.asarray([row["ci_ipw_re_lo"] for row in sim_rows], dtype=float)
-        ci_ipw_hi = np.asarray([row["ci_ipw_re_hi"] for row in sim_rows], dtype=float)
+        mu_ipw = np.asarray([row["mu_oracle_ipw_re"] for row in sim_rows], dtype=float)
+        se_ipw = np.asarray([row["se_oracle_ipw_re"] for row in sim_rows], dtype=float)
+        ci_ipw_lo = np.asarray([row["ci_oracle_ipw_re_lo"] for row in sim_rows], dtype=float)
+        ci_ipw_hi = np.asarray([row["ci_oracle_ipw_re_hi"] for row in sim_rows], dtype=float)
         mu_pet = np.asarray([row["mu_pet_peese"] for row in sim_rows], dtype=float)
         se_pet = np.asarray([row["se_pet_peese"] for row in sim_rows], dtype=float)
         ci_pet_lo = np.asarray([row["ci_pet_peese_lo"] for row in sim_rows], dtype=float)
@@ -873,7 +900,7 @@ def main() -> int:
                 "lambda_sim_mean_non_ghost": float(np.mean(lambda_sim_non_ghost)),
                 "random_effects": summarize_model(mu_re, ci_re_lo, ci_re_hi, mu_true),
                 "gwam_null": summarize_model(mu_g, ci_g_lo, ci_g_hi, mu_true),
-                "selection_ipw_random_effects": summarize_model(mu_ipw, ci_ipw_lo, ci_ipw_hi, mu_true),
+                "oracle_ipw_random_effects": summarize_model(mu_ipw, ci_ipw_lo, ci_ipw_hi, mu_true),
                 "pet_peese": summarize_model(mu_pet, ci_pet_lo, ci_pet_hi, mu_true),
                 "bayesian_gwam": summarize_model(mu_bgwam, ci_bgwam_lo, ci_bgwam_hi, mu_true),
             }
@@ -889,7 +916,7 @@ def main() -> int:
         "scenario_mu_used": None,
         "multiplier_random_effects": None,
         "multiplier_gwam": None,
-        "multiplier_selection_ipw_random_effects": None,
+        "multiplier_oracle_ipw_random_effects": None,
         "multiplier_pet_peese": None,
         "multiplier_bayesian_gwam": None,
     }
@@ -924,8 +951,8 @@ def main() -> int:
         se_re_cal = np.asarray([row["se_re"] for row in cal_rows], dtype=float)
         g_cal = np.asarray([row["mu_gwam"] for row in cal_rows], dtype=float)
         se_g_cal = np.asarray([row["se_gwam"] for row in cal_rows], dtype=float)
-        ipw_cal = np.asarray([row["mu_ipw_re"] for row in cal_rows], dtype=float)
-        se_ipw_cal = np.asarray([row["se_ipw_re"] for row in cal_rows], dtype=float)
+        ipw_cal = np.asarray([row["mu_oracle_ipw_re"] for row in cal_rows], dtype=float)
+        se_ipw_cal = np.asarray([row["se_oracle_ipw_re"] for row in cal_rows], dtype=float)
         pet_cal = np.asarray([row["mu_pet_peese"] for row in cal_rows], dtype=float)
         se_pet_cal = np.asarray([row["se_pet_peese"] for row in cal_rows], dtype=float)
         bgwam_cal = np.asarray([row["mu_bayesian_gwam"] for row in cal_rows], dtype=float)
@@ -948,7 +975,7 @@ def main() -> int:
         ci_calibration_summary["scenario_mu_used"] = cal_mu_true
         ci_calibration_summary["multiplier_random_effects"] = mult_re
         ci_calibration_summary["multiplier_gwam"] = mult_g
-        ci_calibration_summary["multiplier_selection_ipw_random_effects"] = (
+        ci_calibration_summary["multiplier_oracle_ipw_random_effects"] = (
             mult_ipw if np.isfinite(mult_ipw) else None
         )
         ci_calibration_summary["multiplier_pet_peese"] = mult_pet if np.isfinite(mult_pet) else None
@@ -980,8 +1007,8 @@ def main() -> int:
                     mu_true,
                     mult_ipw,
                 )
-                scenario["selection_ipw_random_effects"]["coverage_calibrated"] = ipw_cov  # type: ignore[index]
-                scenario["selection_ipw_random_effects"]["mean_ci_width_calibrated"] = ipw_w  # type: ignore[index]
+                scenario["oracle_ipw_random_effects"]["coverage_calibrated"] = ipw_cov  # type: ignore[index]
+                scenario["oracle_ipw_random_effects"]["mean_ci_width_calibrated"] = ipw_w  # type: ignore[index]
             if np.isfinite(mult_pet):
                 pet_cov, pet_w = summarize_model_with_multiplier(
                     buf["mu_pet"],  # type: ignore[index]
@@ -1101,7 +1128,7 @@ def main() -> int:
             f"n={ci_calibration_summary['calibration_runs_success']}, "
             f"mult_re={ci_calibration_summary['multiplier_random_effects']:.3f}, "
             f"mult_gwam={ci_calibration_summary['multiplier_gwam']:.3f}, "
-            f"mult_ipw={ci_calibration_summary['multiplier_selection_ipw_random_effects']}, "
+            f"mult_ipw={ci_calibration_summary['multiplier_oracle_ipw_random_effects']}, "
             f"mult_pet={ci_calibration_summary['multiplier_pet_peese']})"
         )
     for scenario in scenario_results:
@@ -1111,7 +1138,7 @@ def main() -> int:
         lambda_sim_mean_non_ghost = scenario["lambda_sim_mean_non_ghost"]
         re_bias = scenario["random_effects"]["bias"]  # type: ignore[index]
         gwam_bias = scenario["gwam_null"]["bias"]  # type: ignore[index]
-        ipw_bias = scenario["selection_ipw_random_effects"]["bias"]  # type: ignore[index]
+        ipw_bias = scenario["oracle_ipw_random_effects"]["bias"]  # type: ignore[index]
         pet_bias = scenario["pet_peese"]["bias"]  # type: ignore[index]
         bgwam_bias = scenario["bayesian_gwam"]["bias"]  # type: ignore[index]
         re_cov = scenario["random_effects"]["coverage_95"]  # type: ignore[index]

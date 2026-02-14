@@ -14,10 +14,9 @@ from pathlib import Path
 import numpy as np
 
 
+# sys.path setup handled by conftest.py
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS_DIR = PROJECT_ROOT / "scripts"
-if str(SCRIPTS_DIR) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS_DIR))
 
 from gwam_utils import normal_cdf  # noqa: E402
 from model_gwam_bayesian import (  # noqa: E402

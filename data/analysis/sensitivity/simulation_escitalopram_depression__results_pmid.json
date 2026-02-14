@@ -61,7 +61,7 @@
     "scenario_mu_used": 0.25464221837358075,
     "multiplier_random_effects": 2.287893437048995,
     "multiplier_gwam": 2.4607308742604506,
-    "multiplier_selection_ipw_random_effects": 2.3103613635933717,
+    "multiplier_oracle_ipw_random_effects": 2.3103613635933717,
     "multiplier_pet_peese": 2.708282248144647
   },
   "scenario_results": [
@@ -91,7 +91,7 @@
         "coverage_calibrated": 0.9612,
         "mean_ci_width_calibrated": 0.4696677994802717
       },
-      "selection_ipw_random_effects": {
+      "oracle_ipw_random_effects": {
         "n_valid": 5000.0,
         "mean_estimate": 0.00848684732274299,
         "bias": 0.00848684732274299,
@@ -138,7 +138,7 @@
         "coverage_calibrated": 0.9608,
         "mean_ci_width_calibrated": 0.47275616911126106
       },
-      "selection_ipw_random_effects": {
+      "oracle_ipw_random_effects": {
         "n_valid": 5000.0,
         "mean_estimate": 0.10204064508166755,
         "bias": 0.0020406450816675384,
@@ -185,7 +185,7 @@
         "coverage_calibrated": 0.957,
         "mean_ci_width_calibrated": 0.47783582905781613
       },
-      "selection_ipw_random_effects": {
+      "oracle_ipw_random_effects": {
         "n_valid": 5000.0,
         "mean_estimate": 0.25764413075075515,
         "bias": 0.0030019123771742027,
@@ -206,5 +206,8 @@
         "mean_ci_width_calibrated": 1.0683345211169482
       }
     }
-  ]
+  ],
+  "metadata": {
+    "note": "Regenerate with full pipeline for updated environment metadata."
+  }
 }

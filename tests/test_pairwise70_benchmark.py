@@ -3,19 +3,12 @@
 
 from __future__ import annotations
 
-import sys
 import unittest
-from pathlib import Path
 
 import pandas as pd
 
-
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SCRIPTS_DIR = PROJECT_ROOT / "scripts"
-if str(SCRIPTS_DIR) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS_DIR))
-
-from run_pairwise70_benchmark import (  # noqa: E402
+# sys.path setup handled by conftest.py
+from run_pairwise70_benchmark import (
     apply_lambda_bounds,
     build_lambda_posterior_params,
     build_review_cluster_summary,

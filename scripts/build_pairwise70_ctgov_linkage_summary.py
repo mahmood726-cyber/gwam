@@ -51,15 +51,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--pairwise-data-dir",
         type=Path,
-        default=Path(r"C:\Users\user\OneDrive - NHS\Documents\Pairwise70\data"),
+        required=True,
         help="Directory containing Pairwise70 .rda files for exact NCT extraction.",
     )
     parser.add_argument(
         "--query-csv",
         type=Path,
-        default=Path(
-            r"C:\Users\user\OneDrive - NHS\Documents\Pairwise70\analysis\transportability\ctgov_query_terms.csv"
-        ),
+        required=True,
         help="Pairwise70 review query CSV with review_id and query_term.",
     )
     parser.add_argument(
@@ -208,7 +206,8 @@ def build_review_nct_map(pairwise_data_dir: Path, target_review_ids: set[str]) -
             continue
         try:
             payload = pyreadr.read_r(str(file_path))
-        except Exception:
+        except (OSError, ValueError, KeyError) as exc:
+            print(f"WARNING: Failed to read {file_path.name}: {type(exc).__name__}: {exc}")
             continue
         file_ids: set[str] = set()
         for _, frame in payload.items():
@@ -326,7 +325,8 @@ def fuzzy_match_ctgov(
         resp = requests.get(API_BASE, params=params, timeout=timeout_sec)
         resp.raise_for_status()
         payload = resp.json()
-    except Exception:
+    except (requests.RequestException, ValueError, KeyError) as exc:
+        print(f"WARNING: CT.gov fuzzy match failed: {type(exc).__name__}: {exc}")
         return None
 
     studies = payload.get("studies", [])
@@ -432,7 +432,8 @@ def resolve_exact_nct_studies(
             if nct not in nct_cache:
                 try:
                     nct_cache[nct] = fetch_study_by_nct(nct, timeout_sec=timeout_sec)
-                except Exception:
+                except (requests.RequestException, ValueError, KeyError) as exc:
+                    print(f"WARNING: Failed to fetch {nct}: {type(exc).__name__}: {exc}")
                     nct_cache[nct] = None
                 if sleep_ms > 0:
                     time.sleep(sleep_ms / 1000.0)
@@ -463,9 +464,13 @@ def fetch_query_payload(
         }
         if token:
             params["pageToken"] = token
-        resp = requests.get(API_BASE, params=params, timeout=timeout_sec)
-        resp.raise_for_status()
-        payload = resp.json()
+        try:
+            resp = requests.get(API_BASE, params=params, timeout=timeout_sec)
+            resp.raise_for_status()
+            payload = resp.json()
+        except (requests.RequestException, ValueError) as exc:
+            print(f"WARNING: CT.gov page fetch failed for '{query_term}': {type(exc).__name__}: {exc}")
+            break  # return partial results from earlier pages
         studies = normalize_studies_shape(payload.get("studies", []))
         all_studies.extend(studies)
         token = payload.get("nextPageToken")

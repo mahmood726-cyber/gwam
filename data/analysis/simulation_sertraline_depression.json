@@ -81,5 +81,8 @@
         "mean_ci_width": 0.13349688449598085
       }
     }
-  ]
+  ],
+  "metadata": {
+    "note": "Regenerate with full pipeline for updated environment metadata."
+  }
 }

@@ -195,7 +195,7 @@ def bayesian_gwam_posterior(
     if sigma_post > 0:
         pr_positive = normal_cdf(mu_post / sigma_post)
     else:
-        pr_positive = 1.0 if mu_post > 0 else 0.0
+        pr_positive = 1.0 if mu_post > 0 else (0.0 if mu_post < 0 else 0.5)
 
     return BayesianResult(
         posterior_mean=mu_post,
@@ -287,10 +287,10 @@ def load_registry_weights(
         raw_weight = row[weight_column]
         try:
             weight = float(raw_weight)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError) as exc:
             raise ValueError(
                 f"Non-numeric weight '{raw_weight}' in row {row_idx}, column '{weight_column}'."
-            )
+            ) from exc
         if not math.isfinite(weight) or weight < 0:
             raise ValueError(
                 f"Invalid weight {weight} in row {row_idx}, column '{weight_column}'."

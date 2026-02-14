@@ -62,7 +62,7 @@ def sanitize_path_component(text: str) -> str:
 
 
 def normal_quantile(p: float) -> float:
-    """Approximate inverse normal CDF (Abramowitz & Stegun 26.2.23)."""
+    """Approximate inverse normal CDF (Abramowitz & Stegun 26.2.23, max |error| < 4.5e-4)."""
     if p <= 0:
         return float("-inf")
     if p >= 1:
@@ -122,9 +122,9 @@ def parse_timeframe_values_to_weeks(timeframe: str) -> list[float]:
         elif unit.startswith("week"):
             values_weeks.append(value)
         elif unit.startswith("month"):
-            values_weeks.append(value * 4.345)
+            values_weeks.append(value * 4.348)  # 365.25/12/7
         elif unit.startswith("year"):
-            values_weeks.append(value * 52.0)
+            values_weeks.append(value * 52.179)  # 365.25/7
     return values_weeks
 
 
@@ -444,6 +444,7 @@ def build_environment_metadata() -> dict[str, str]:
     return {
         "python_version": sys.version.split()[0],
         "numpy_version": __import__("numpy").__version__,
+        "scipy_version": __import__("scipy").__version__,
         "platform": platform.platform(),
         "timestamp_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
     }

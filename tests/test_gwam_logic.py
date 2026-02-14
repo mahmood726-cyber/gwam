@@ -12,10 +12,9 @@ import unittest
 from pathlib import Path
 
 
+# sys.path setup handled by conftest.py
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS_DIR = PROJECT_ROOT / "scripts"
-if str(SCRIPTS_DIR) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS_DIR))
 
 from gwam_utils import (  # noqa: E402
     classify_publication_status,
@@ -552,9 +551,9 @@ class TestModelGWAMScript(unittest.TestCase):
             self.assertTrue(sim_payload["ci_calibration"]["out_of_sample"])
             self.assertGreaterEqual(sim_payload["ci_calibration"]["calibration_runs_success"], 1)
             scen = sim_payload["scenario_results"][0]
-            self.assertIn("selection_ipw_random_effects", scen)
+            self.assertIn("oracle_ipw_random_effects", scen)
             self.assertIn("pet_peese", scen)
-            self.assertIn("n_valid", scen["selection_ipw_random_effects"])
+            self.assertIn("n_valid", scen["oracle_ipw_random_effects"])
             self.assertIn("n_valid", scen["pet_peese"])
 
 

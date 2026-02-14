@@ -34,5 +34,8 @@
     "mu_gwam_sim_sd": 0.03269936314252472,
     "mu_gwam_sim_q025": -0.04135718082179748,
     "mu_gwam_sim_q975": 0.08737331434835537
+  },
+  "metadata": {
+    "note": "Regenerate with full pipeline for updated environment metadata."
   }
 }

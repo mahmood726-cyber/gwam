@@ -36,6 +36,7 @@ def parse_args() -> argparse.Namespace:
         required=True,
         help="Published pooled effect size (input to GWAM correction).",
     )
+    parser.add_argument("--seed", type=int, default=42, help="Random seed forwarded to model and simulation scripts.")
     parser.add_argument("--sim-n", type=int, default=5000)
     parser.add_argument("--ghost-mu", type=float, default=0.0)
     parser.add_argument("--ghost-sd", type=float, default=0.1)
@@ -596,6 +597,8 @@ def main() -> int:
             str(args.results_only_mu),
             "--results-only-sd",
             str(args.results_only_sd),
+            "--seed",
+            str(args.seed),
             "--output-json",
             str(gwam_json),
         ]
@@ -681,6 +684,8 @@ def main() -> int:
             str(args.ci_target_coverage),
             "--ci-calibration-runs",
             str(args.ci_calibration_runs),
+            "--seed",
+            str(args.seed),
             "--output-json",
             str(sim_json),
         ]

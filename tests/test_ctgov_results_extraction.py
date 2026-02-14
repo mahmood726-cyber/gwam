@@ -4,16 +4,10 @@
 from __future__ import annotations
 
 import math
-import sys
 import unittest
-from pathlib import Path
 from unittest.mock import patch
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-SCRIPTS_DIR = PROJECT_ROOT / "scripts"
-if str(SCRIPTS_DIR) not in sys.path:
-    sys.path.insert(0, str(SCRIPTS_DIR))
-
+# sys.path setup handled by conftest.py
 from extract_ctgov_results import (
     extract_binary_from_measurements,
     extract_continuous_from_measurements,
@@ -139,6 +133,11 @@ class TestExtractBinaryFromMeasurements(unittest.TestCase):
     def test_events_exceeding_denom_returns_none(self) -> None:
         """Events > denominator should be rejected."""
         outcome = self._make_binary_outcome(120, 100, 20, 100)
+        self.assertIsNone(extract_binary_from_measurements(outcome, []))
+
+    def test_double_all_events_returns_none(self) -> None:
+        """Both arms 100% events (e1==n1, e2==n2) -> double-all-events exclusion."""
+        outcome = self._make_binary_outcome(100, 100, 80, 80)
         self.assertIsNone(extract_binary_from_measurements(outcome, []))
 
 
