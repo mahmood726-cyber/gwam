@@ -10,6 +10,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from gwam_utils import sanitize_path_component
+
 DEPRESSION_RESPONSE_KEYWORDS = [
     "response",
     "remission",
@@ -302,8 +304,7 @@ def parse_args() -> argparse.Namespace:
 def safe_stem(text: str) -> str:
     """Sanitize text for use as a path component (no traversal characters)."""
     text = text.strip().lower().replace(" ", "_")
-    text = text.replace("/", "_").replace("\\", "_").replace("..", "_").replace("\0", "")
-    return text
+    return sanitize_path_component(text)
 
 
 def resolve_estimand_filters(args: argparse.Namespace) -> tuple[list[str], list[str], float | None, float | None, str]:

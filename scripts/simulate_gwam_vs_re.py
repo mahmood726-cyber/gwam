@@ -556,7 +556,7 @@ def load_registry_weights(
 
     weights = raw_weights.copy()
     if winsorize_pct < 100.0:
-        cap = float(np.quantile(weights, winsorize_pct / 100.0))
+        cap = float(np.quantile(weights, winsorize_pct / 100.0, method="linear"))
         weights = np.minimum(weights, cap)
 
     total_weight = float(np.sum(weights))
@@ -966,11 +966,11 @@ def main() -> int:
         ipw_std = ipw_std[np.isfinite(ipw_std)]
         pet_std = pet_std[np.isfinite(pet_std)]
         bgwam_std = bgwam_std[np.isfinite(bgwam_std)]
-        mult_re = float(np.quantile(re_std, args.ci_target_coverage))
-        mult_g = float(np.quantile(g_std, args.ci_target_coverage))
-        mult_ipw = float(np.quantile(ipw_std, args.ci_target_coverage)) if ipw_std.size else float("nan")
-        mult_pet = float(np.quantile(pet_std, args.ci_target_coverage)) if pet_std.size else float("nan")
-        mult_bgwam = float(np.quantile(bgwam_std, args.ci_target_coverage)) if bgwam_std.size else float("nan")
+        mult_re = float(np.quantile(re_std, args.ci_target_coverage, method="linear"))
+        mult_g = float(np.quantile(g_std, args.ci_target_coverage, method="linear"))
+        mult_ipw = float(np.quantile(ipw_std, args.ci_target_coverage, method="linear")) if ipw_std.size else float("nan")
+        mult_pet = float(np.quantile(pet_std, args.ci_target_coverage, method="linear")) if pet_std.size else float("nan")
+        mult_bgwam = float(np.quantile(bgwam_std, args.ci_target_coverage, method="linear")) if bgwam_std.size else float("nan")
         ci_calibration_summary["calibration_runs_success"] = int(len(cal_rows))
         ci_calibration_summary["scenario_mu_used"] = cal_mu_true
         ci_calibration_summary["multiplier_random_effects"] = mult_re

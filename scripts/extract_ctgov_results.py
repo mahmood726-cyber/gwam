@@ -63,8 +63,8 @@ def parse_args() -> argparse.Namespace:
         "--require-completed",
         action="store_true",
         default=True,
-        help="Only extract results from COMPLETED trials (default: True). "
-             "Use --no-require-completed to include TERMINATED/SUSPENDED.",
+        help="Only extract results from COMPLETED trials (default: True, this flag is "
+             "implicit). Use --no-require-completed to include TERMINATED/SUSPENDED.",
     )
     parser.add_argument(
         "--no-require-completed",

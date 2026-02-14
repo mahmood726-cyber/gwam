@@ -72,7 +72,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def quantile(values: np.ndarray, q: float) -> float:
-    return float(np.quantile(values, q))
+    return float(np.quantile(values, q, method="linear"))
 
 
 def main() -> int:

@@ -5,7 +5,11 @@ from __future__ import annotations
 
 import math
 import re
+import sys
 from typing import Any, Iterable
+
+if sys.version_info < (3, 10):
+    raise SystemExit("GWAM requires Python >= 3.10 (uses X | Y union type syntax).")
 
 # Small curated alias map for common intervention names.
 INTERVENTION_ALIASES: dict[str, list[str]] = {
@@ -53,11 +57,11 @@ def sanitize_csv_cell(value: str) -> str:
 
 
 def sanitize_path_component(text: str) -> str:
-    """Remove path traversal characters from a user-provided path component."""
+    """Remove path traversal and OS-invalid characters from a path component."""
     # Strip path separators and parent-directory references
     text = text.replace("/", "_").replace("\\", "_").replace("..", "_")
-    # Remove any remaining null bytes
-    text = text.replace("\0", "")
+    # Remove null bytes and Windows-invalid filename characters
+    text = re.sub(r'[\0<>:"|?*]', "", text)
     return text
 
 
@@ -441,10 +445,15 @@ def build_environment_metadata() -> dict[str, str]:
     import platform
     import sys
 
-    return {
+    meta: dict[str, str] = {
         "python_version": sys.version.split()[0],
         "numpy_version": __import__("numpy").__version__,
         "scipy_version": __import__("scipy").__version__,
         "platform": platform.platform(),
         "timestamp_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
     }
+    try:
+        meta["pandas_version"] = __import__("pandas").__version__
+    except ImportError:
+        pass
+    return meta

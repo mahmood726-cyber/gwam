@@ -557,6 +557,41 @@ class TestModelGWAMScript(unittest.TestCase):
             self.assertIn("n_valid", scen["pet_peese"])
 
 
+    def test_model_gwam_all_ghosts_lambda_zero(self) -> None:
+        """model_gwam.py handles lambda=0 (all trials are ghosts) without crashing."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            csv_path = tmp / "all_ghost.csv"
+            model_out = tmp / "gwam.json"
+
+            rows = [
+                {"is_ghost_protocol": "true", "has_pmid": "false", "has_results": "false", "weight_n": "100"},
+                {"is_ghost_protocol": "true", "has_pmid": "false", "has_results": "false", "weight_n": "200"},
+            ]
+            fieldnames = list(rows[0].keys())
+            with csv_path.open("w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
+                writer.writeheader()
+                writer.writerows(rows)
+
+            proc = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPTS_DIR / "model_gwam.py"),
+                    "--registry-csv", str(csv_path),
+                    "--published-mu", "0.3",
+                    "--sim-n", "100",
+                    "--output-json", str(model_out),
+                ],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(proc.returncode, 0, msg=proc.stderr)
+            payload = json.loads(model_out.read_text(encoding="utf-8"))
+            self.assertAlmostEqual(payload["weights"]["integrity_ratio_lambda_pmid_only"], 0.0)
+            self.assertAlmostEqual(payload["weights"]["integrity_ratio_lambda_non_ghost"], 0.0)
+
+
 class TestRunWorkflowGuards(unittest.TestCase):
     def test_published_mu_scope_mismatch_fails_fast(self) -> None:
         cmd = [

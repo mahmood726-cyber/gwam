@@ -23,8 +23,11 @@ import pyreadr
 
 from scipy.special import ndtr as normal_cdf
 
-from gwam_utils import build_environment_metadata, normal_quantile, safe_float
-from grey_meta_v8 import GRMA
+from gwam_utils import build_environment_metadata, normal_quantile, safe_float, sanitize_csv_cell
+try:
+    from grey_meta_v8 import GRMA
+except ImportError:
+    GRMA = None  # type: ignore[assignment,misc]
 from model_gwam_bayesian import PriorSpec, bayesian_gwam_posterior
 from simulate_gwam_vs_re import pet_peese_estimate, random_effects_dl
 
@@ -445,10 +448,10 @@ def build_review_cluster_summary(
             boot_010.append(float(np.sum(arr_010[idx]) / denom))
             boot_020.append(float(np.sum(arr_020[idx]) / denom))
         if boot_010 and boot_020:
-            ci_010_lo = float(np.quantile(boot_010, 0.025))
-            ci_010_hi = float(np.quantile(boot_010, 0.975))
-            ci_020_lo = float(np.quantile(boot_020, 0.025))
-            ci_020_hi = float(np.quantile(boot_020, 0.975))
+            ci_010_lo = float(np.quantile(boot_010, 0.025, method="linear"))
+            ci_010_hi = float(np.quantile(boot_010, 0.975, method="linear"))
+            ci_020_lo = float(np.quantile(boot_020, 0.025, method="linear"))
+            ci_020_hi = float(np.quantile(boot_020, 0.975, method="linear"))
 
     summary = {
         "n_reviews": int(len(grouped)),
@@ -646,16 +649,19 @@ def _build_grma_summary(results: pd.DataFrame) -> dict[str, Any]:
         "median_rel_shift_grma_vs_re": float(np.median(rel_shift)),
         "median_w_max_grma": float(np.median(grma_valid["w_max_grma"].values)),
         "median_n_eff_grma": float(np.median(grma_valid["n_eff_grma"].values)),
-        "correlation_grma_re": float(np.corrcoef(grma_valid["mu_grma"].values, grma_valid["mu_re"].values)[0, 1]),
+        "correlation_grma_re": (
+            float(np.corrcoef(grma_valid["mu_grma"].values, grma_valid["mu_re"].values)[0, 1])
+            if len(grma_valid) >= 2 else float("nan")
+        ),
         "by_k_band": {
             "k_3": _grma_k_band_summary(grma_valid, 3, 3),
             "k_4_to_9": _grma_k_band_summary(grma_valid, 4, 9),
-            "k_ge_10": _grma_k_band_summary(grma_valid, 10, 999999),
+            "k_ge_10": _grma_k_band_summary(grma_valid, 10, math.inf),
         },
     }
 
 
-def _grma_k_band_summary(df: pd.DataFrame, k_lo: int, k_hi: int) -> dict[str, Any]:
+def _grma_k_band_summary(df: pd.DataFrame, k_lo: int, k_hi: float) -> dict[str, Any]:
     sub = df.loc[(df["k"] >= k_lo) & (df["k"] <= k_hi)]
     if len(sub) == 0:
         return {"n": 0}
@@ -664,7 +670,10 @@ def _grma_k_band_summary(df: pd.DataFrame, k_lo: int, k_hi: int) -> dict[str, An
         "n": int(len(sub)),
         "median_abs_shift": float(np.median(abs_shift)),
         "mean_abs_shift": float(np.mean(abs_shift)),
-        "correlation_grma_re": float(np.corrcoef(sub["mu_grma"].values, sub["mu_re"].values)[0, 1]),
+        "correlation_grma_re": (
+            float(np.corrcoef(sub["mu_grma"].values, sub["mu_re"].values)[0, 1])
+            if len(sub) >= 2 else float("nan")
+        ),
         "median_w_max": float(np.median(sub["w_max_grma"].values)),
         "median_n_eff": float(np.median(sub["n_eff_grma"].values)),
     }
@@ -910,6 +919,9 @@ def main() -> int:
                 "source_failure": float("nan"),
             }
 
+            lambda_draws: np.ndarray | None = None
+            lambda_draws_unclipped: np.ndarray | None = None
+
             if args.lambda_uncertainty_model == "beta":
                 posterior = build_lambda_posterior_params(
                     lambda_source=lambda_source,
@@ -929,11 +941,11 @@ def main() -> int:
                     if clipping_enabled
                     else lambda_draws_unclipped.copy()
                 )
-                lambda_proxy = float(np.mean(lambda_draws))
-                lambda_proxy_unclipped = float(np.mean(lambda_draws_unclipped))
                 lambda_draw_mean = float(np.mean(lambda_draws))
+                lambda_proxy = lambda_draw_mean
+                lambda_proxy_unclipped = float(np.mean(lambda_draws_unclipped))
                 lambda_draw_sd = float(np.std(lambda_draws, ddof=1))
-                lambda_draw_mean_unclipped = float(np.mean(lambda_draws_unclipped))
+                lambda_draw_mean_unclipped = lambda_proxy_unclipped
                 lambda_draw_sd_unclipped = float(np.std(lambda_draws_unclipped, ddof=1))
             else:
                 lambda_proxy = apply_lambda_bounds(
@@ -976,22 +988,30 @@ def main() -> int:
 
             # --- GRMA (Grey Relational Meta-Analysis) ---
             min_k_grma = 3
-            if k >= min_k_grma:
+            if GRMA is not None and k >= min_k_grma:
                 try:
                     grma_obj = GRMA(effect_guard=True)
                     grma_fit = grma_obj.fit(yi, vi)
                     mu_grma = float(grma_fit["estimate"])
-                    # Jackknife SE: leave-one-out
+                    # Jackknife SE: leave-one-out (Wald z-test approximation)
                     loo_ests = np.empty(k)
                     for jj in range(k):
                         idx_loo = np.concatenate([np.arange(jj), np.arange(jj + 1, k)])
-                        loo_fit = grma_obj._core(yi[idx_loo], vi[idx_loo])
-                        loo_ests[jj] = loo_fit["estimate"]
-                    loo_mean = np.mean(loo_ests)
-                    se_grma = float(np.sqrt((k - 1) / k * np.sum((loo_ests - loo_mean) ** 2)))
+                        try:
+                            loo_fit = grma_obj._core(yi[idx_loo], vi[idx_loo])
+                            loo_ests[jj] = loo_fit["estimate"]
+                        except (ValueError, FloatingPointError, ZeroDivisionError):
+                            loo_ests[jj] = float("nan")
+                    loo_finite = loo_ests[np.isfinite(loo_ests)]
+                    if len(loo_finite) >= 3:
+                        loo_mean = np.mean(loo_finite)
+                        se_grma = float(np.sqrt((k - 1) / k * np.sum((loo_finite - loo_mean) ** 2)))
+                    else:
+                        se_grma = float("nan")
                     w_max_grma = float(grma_fit["w_max"])
                     n_eff_grma = float(grma_fit["n_eff"])
-                except Exception:
+                except Exception as exc:
+                    print(f"WARNING: GRMA failed for analysis {review_id}/{analysis_key}: {type(exc).__name__}: {exc}")
                     mu_grma = float("nan")
                     se_grma = float("nan")
                     w_max_grma = float("nan")
@@ -1200,6 +1220,12 @@ def main() -> int:
 
     results = pd.DataFrame(all_rows)
     results = results.sort_values(["review_id", "dataset", "analysis_key"]).reset_index(drop=True)
+    # Sanitize string columns against CSV formula injection
+    str_cols = results.select_dtypes(include=["object"]).columns
+    for col in str_cols:
+        results[col] = results[col].apply(
+            lambda x: sanitize_csv_cell(x) if isinstance(x, str) else x
+        )
     results_path = output_dir / "analysis_results.csv"
     results.to_csv(results_path, index=False)
 
@@ -1336,6 +1362,7 @@ def main() -> int:
             "lambda_pseudo_concentration": float(args.lambda_pseudo_concentration),
             "lambda_clipping_enabled": bool(clipping_enabled),
             "review_bootstrap_iters": int(args.review_bootstrap_iters),
+            "review_bootstrap_seed": int(args.review_bootstrap_seed),
             "ipw_p_nonsig_calibration": "Solved from (q_sig*p_sig + (1-q_sig)*p_nonsig = lambda_proxy), then clipped.",
             "gwam_mode": "Sensitivity grid + proxy lambda shrinkage on RE estimate.",
             "gwam_significance_note": (
@@ -1392,10 +1419,6 @@ def main() -> int:
         },
     }
 
-    summary_path = output_dir / "summary.json"
-    with summary_path.open("w", encoding="utf-8") as handle:
-        json.dump(summary, handle, indent=2)
-
     strat_lambda_rows = [
         flatten_subset_row(name, subset) for name, subset in summary["stratified"]["by_lambda_proxy_source"].items()
     ]
@@ -1419,7 +1442,8 @@ def main() -> int:
     summary["outputs"]["robust_sensitivity_json"] = str(robust_path)
     summary["outputs"]["clustered_by_review_csv"] = str(review_cluster_path)
 
-    # Rewrite summary after output paths are appended.
+    # Write summary once, after all output paths are populated.
+    summary_path = output_dir / "summary.json"
     with summary_path.open("w", encoding="utf-8") as handle:
         json.dump(summary, handle, indent=2)
 

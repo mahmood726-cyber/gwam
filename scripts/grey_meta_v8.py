@@ -35,6 +35,14 @@ class GRMA:
         tukey_c=4.685,
         guard_power=1,
     ):
+        if not (0 < zeta <= 1):
+            raise ValueError("zeta must be in (0, 1]")
+        if prec_cap <= 0:
+            raise ValueError("prec_cap must be positive")
+        if not (0 <= trim < 0.5):
+            raise ValueError("trim must be in [0, 0.5)")
+        if tukey_c <= 0:
+            raise ValueError("tukey_c must be positive")
         self.zeta = zeta
         self.norm_method = norm_method
         self.anchor_mode = anchor_mode
@@ -60,8 +68,8 @@ class GRMA:
 
         # Step 3: Robust min-max normalization (fitted on data)
         def robust_minmax_fit(x):
-            q_lo = np.percentile(x, 5)
-            q_hi = np.percentile(x, 95)
+            q_lo = np.percentile(x, 5, method="linear")
+            q_hi = np.percentile(x, 95, method="linear")
             rng = q_hi - q_lo
             if rng < 1e-12:
                 rng = 1.0
@@ -70,8 +78,8 @@ class GRMA:
         def norm_val(x, q_lo, rng):
             return np.clip((x - q_lo) / rng, 0.0, 1.0)
 
-        eff_lo, eff_hi, eff_rng = robust_minmax_fit(feat_effect)
-        pre_lo, pre_hi, pre_rng = robust_minmax_fit(feat_prec)
+        eff_lo, _, eff_rng = robust_minmax_fit(feat_effect)
+        pre_lo, _, pre_rng = robust_minmax_fit(feat_prec)
 
         x_eff = norm_val(feat_effect, eff_lo, eff_rng)
         x_pre = norm_val(feat_prec, pre_lo, pre_rng)
@@ -133,11 +141,27 @@ class GRMA:
             "anchor_p": float(a_p_raw),
         }
 
+    @staticmethod
+    def _validate_inputs(y, v):
+        """Validate effect/variance arrays. Raises ValueError on bad input."""
+        if len(y) != len(v):
+            raise ValueError("effect and variance must have the same length")
+        if len(y) == 0:
+            raise ValueError("at least 1 study required")
+        if np.any(~np.isfinite(y)) or np.any(~np.isfinite(v)):
+            raise ValueError("effect and variance must be finite (no NaN/Inf)")
+        if np.any(v <= 0):
+            raise ValueError("all variances must be positive")
+
     def fit(self, effect, variance):
         """Fit GRMA on observed data. Returns dict with estimate and diagnostics."""
         y = np.asarray(effect, dtype=np.float64)
         v = np.asarray(variance, dtype=np.float64)
+        self._validate_inputs(y, v)
         k = len(y)
+
+        if k < 3:
+            return _hk_reml(y, v)
 
         res = self._core(y, v)
         w = res["weights"]
@@ -159,10 +183,26 @@ class GRMA:
         Bootstrap percentile and (optionally) full BCa confidence intervals.
 
         Returns dict with ci_lo_pct, ci_hi_pct, ci_lo_bca, ci_hi_bca, se, estimate.
+        The p-value is a Wald z-test approximation (est/se) and may not exactly
+        agree with the BCa interval boundaries.
         """
         y = np.asarray(effect, dtype=np.float64)
         v = np.asarray(variance, dtype=np.float64)
+        self._validate_inputs(y, v)
         k = len(y)
+
+        if k < 3:
+            hk = _hk_reml(y, v)
+            return {
+                "estimate": hk["estimate"],
+                "se": hk["se"],
+                "ci_lo_pct": hk["ci_lo"],
+                "ci_hi_pct": hk["ci_hi"],
+                "ci_lo_bca": np.nan,
+                "ci_hi_bca": np.nan,
+                "pvalue": np.nan,
+                "n_boot_ok": 0,
+            }
 
         # Original estimate
         res0 = self._core(y, v)
@@ -176,7 +216,7 @@ class GRMA:
             try:
                 rb = self._core(y[idx], v[idx])
                 boot_est[b] = rb["estimate"]
-            except Exception:
+            except (ValueError, FloatingPointError, ZeroDivisionError, RuntimeWarning):
                 boot_est[b] = np.nan
 
         boot_ok = boot_est[np.isfinite(boot_est)]
@@ -197,8 +237,8 @@ class GRMA:
         se = float(np.std(boot_ok, ddof=1))
 
         # Percentile CI
-        ci_lo_pct = float(np.percentile(boot_ok, 100 * alpha / 2))
-        ci_hi_pct = float(np.percentile(boot_ok, 100 * (1 - alpha / 2)))
+        ci_lo_pct = float(np.percentile(boot_ok, 100 * alpha / 2, method="linear"))
+        ci_hi_pct = float(np.percentile(boot_ok, 100 * (1 - alpha / 2), method="linear"))
 
         # BCa CI
         ci_lo_bca = np.nan
@@ -218,17 +258,20 @@ class GRMA:
                 try:
                     rj = self._core(y[mask], v[mask])
                     jack_est[i] = rj["estimate"]
-                except Exception:
+                except (ValueError, FloatingPointError, ZeroDivisionError, RuntimeWarning):
                     jack_est[i] = np.nan
 
             jack_ok_mask = np.isfinite(jack_est)
-            if np.sum(jack_ok_mask) >= 3:
-                jack_mean = np.mean(jack_est[jack_ok_mask])
-                d = jack_mean - jack_est
-                d[~jack_ok_mask] = 0.0
+            n_jack_ok = int(np.sum(jack_ok_mask))
+            if n_jack_ok >= 3:
+                jack_finite = jack_est[jack_ok_mask]
+                jack_mean = np.mean(jack_finite)
+                d = jack_mean - jack_finite
                 denom = np.sum(d**2)
                 if denom > 1e-30:
-                    a_hat = float(np.sum(d**3) / (6.0 * denom**1.5))
+                    a_hat = float(np.clip(
+                        np.sum(d**3) / (6.0 * denom**1.5), -0.5, 0.5
+                    ))
                 else:
                     a_hat = 0.0
             else:
@@ -245,8 +288,8 @@ class GRMA:
             adj_lo = max(0.5 / n_ok, min(1 - 0.5 / n_ok, adj_lo))
             adj_hi = max(0.5 / n_ok, min(1 - 0.5 / n_ok, adj_hi))
 
-            ci_lo_bca = float(np.percentile(boot_ok, 100 * adj_lo))
-            ci_hi_bca = float(np.percentile(boot_ok, 100 * adj_hi))
+            ci_lo_bca = float(np.percentile(boot_ok, 100 * adj_lo, method="linear"))
+            ci_hi_bca = float(np.percentile(boot_ok, 100 * adj_hi, method="linear"))
 
         # P-value
         if se > 1e-15:
@@ -267,10 +310,13 @@ class GRMA:
         }
 
     def leave_one_out(self, effect, variance):
-        """Leave-one-out influence diagnostics."""
+        """Leave-one-out influence diagnostics. Requires k >= 4 (so LOO has k-1 >= 3)."""
         y = np.asarray(effect, dtype=np.float64)
         v = np.asarray(variance, dtype=np.float64)
+        self._validate_inputs(y, v)
         k = len(y)
+        if k < 4:
+            raise ValueError("leave_one_out requires k >= 4 (each LOO subset needs k >= 3)")
 
         res_full = self._core(y, v)
         est_full = res_full["estimate"]
@@ -345,7 +391,7 @@ def valley_diagnostic(yi, estimate, n_perm=999, seed=None):
         else:
             perm_ratios[p] = 1.0
 
-    valley_p = float(np.mean(perm_ratios <= obs_ratio))
+    valley_p = float((np.sum(perm_ratios <= obs_ratio) + 1) / (n_perm + 1))
     return {"valley_flag": valley_p < 0.05, "valley_p": valley_p}
 
 
@@ -356,7 +402,7 @@ def valley_diagnostic(yi, estimate, n_perm=999, seed=None):
 def _iv_fixed_effect(yi, vi):
     """Inverse-variance fixed-effect meta-analysis."""
     y = np.asarray(yi, dtype=np.float64)
-    v = np.asarray(vi, dtype=np.float64)
+    v = np.maximum(np.asarray(vi, dtype=np.float64), 1e-15)
     w = 1.0 / v
     est = float(np.sum(w * y) / np.sum(w))
     se = float(np.sqrt(1.0 / np.sum(w)))
@@ -373,7 +419,7 @@ def _iv_fixed_effect(yi, vi):
 def _dl_random_effects(yi, vi):
     """DerSimonian-Laird random-effects meta-analysis."""
     y = np.asarray(yi, dtype=np.float64)
-    v = np.asarray(vi, dtype=np.float64)
+    v = np.maximum(np.asarray(vi, dtype=np.float64), 1e-15)
     k = len(y)
 
     w = 1.0 / v
@@ -399,7 +445,7 @@ def _dl_random_effects(yi, vi):
 def _reml_random_effects(yi, vi, max_iter=100, tol=1e-8):
     """REML random-effects meta-analysis (Fisher scoring)."""
     y = np.asarray(yi, dtype=np.float64)
-    v = np.asarray(vi, dtype=np.float64)
+    v = np.maximum(np.asarray(vi, dtype=np.float64), 1e-15)
     k = len(y)
 
     # Start from DL estimate
@@ -438,7 +484,7 @@ def _reml_random_effects(yi, vi, max_iter=100, tol=1e-8):
 def _hk_reml(yi, vi):
     """Hartung-Knapp with REML tau^2."""
     y = np.asarray(yi, dtype=np.float64)
-    v = np.asarray(vi, dtype=np.float64)
+    v = np.maximum(np.asarray(vi, dtype=np.float64), 1e-15)
     k = len(y)
 
     reml = _reml_random_effects(y, v)
@@ -463,9 +509,9 @@ def _hk_reml(yi, vi):
 
 
 def _huber_iv(yi, vi, huber_k=1.345, max_iter=50, tol=1e-6):
-    """Huber M-estimator with inverse-variance starting weights."""
+    """Huber M-estimator with inverse-variance starting weights and plug-in REML tau^2."""
     y = np.asarray(yi, dtype=np.float64)
-    v = np.asarray(vi, dtype=np.float64)
+    v = np.maximum(np.asarray(vi, dtype=np.float64), 1e-15)
     k = len(y)
 
     # Initial REML fit for tau2
@@ -500,7 +546,7 @@ def _huber_iv(yi, vi, huber_k=1.345, max_iter=50, tol=1e-6):
 def _t_re(yi, vi, df_t=4, max_iter=100, tol=1e-8):
     """Student-t random-effects model with fixed degrees of freedom."""
     y = np.asarray(yi, dtype=np.float64)
-    v = np.asarray(vi, dtype=np.float64)
+    v = np.maximum(np.asarray(vi, dtype=np.float64), 1e-15)
     k = len(y)
 
     # Start from REML
@@ -601,9 +647,13 @@ def get_bcg_data():
                      2000 - 8, 1451 - 372, 1665 - 47, 87892 - 499,
                      7232 - 45, 1600 - 65, 27197 - 141, 2338 - 3])
 
-    # Continuity-corrected log RR
-    yi = np.log((tpos + 0.5) / (tpos + tneg + 0.5)) - np.log((cpos + 0.5) / (cpos + cneg + 0.5))
-    vi = 1.0 / (tpos + 0.5) - 1.0 / (tpos + tneg + 0.5) + 1.0 / (cpos + 0.5) - 1.0 / (cpos + cneg + 0.5)
+    # Log RR with continuity correction only when zero cells are present
+    has_zero = (tpos == 0) | (tneg == 0) | (cpos == 0) | (cneg == 0)
+    cc = np.where(has_zero, 0.5, 0.0)
+    yi = (np.log((tpos + cc) / (tpos + tneg + cc))
+          - np.log((cpos + cc) / (cpos + cneg + cc)))
+    vi = (1.0 / (tpos + cc) - 1.0 / (tpos + tneg + cc)
+          + 1.0 / (cpos + cc) - 1.0 / (cpos + cneg + cc))
 
     return yi, vi, "BCG (log RR)"
 

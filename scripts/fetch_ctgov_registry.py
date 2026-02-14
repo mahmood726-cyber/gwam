@@ -17,6 +17,7 @@ from gwam_utils import (
     classify_publication_status,
     extract_pmids,
     intervention_matches,
+    parse_bool,
     sanitize_csv_cell,
     sanitize_path_component,
     trial_passes_design_filters,
@@ -436,9 +437,9 @@ def main() -> int:
             erow.setdefault("results_effect_type", "")
 
             is_results_only = (
-                str(erow.get("has_results", "")).lower() in {"true", "1", "t", "yes"}
-                and str(erow.get("has_pmid", "")).lower() not in {"true", "1", "t", "yes"}
-                and str(erow.get("is_ghost_protocol", "")).lower() not in {"true", "1", "t", "yes"}
+                parse_bool(erow.get("has_results", ""))
+                and not parse_bool(erow.get("has_pmid", ""))
+                and not parse_bool(erow.get("is_ghost_protocol", ""))
             )
             if not is_results_only:
                 continue

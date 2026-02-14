@@ -291,7 +291,7 @@ def load_registry_weights(
             raise ValueError(
                 f"Non-numeric weight '{raw_weight}' in row {row_idx}, column '{weight_column}'."
             ) from exc
-        if not math.isfinite(weight) or weight < 0:
+        if not math.isfinite(weight) or weight <= 0:
             raise ValueError(
                 f"Invalid weight {weight} in row {row_idx}, column '{weight_column}'."
             )
