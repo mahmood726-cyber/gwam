@@ -1,0 +1,241 @@
+{
+  "registry_csv": "C:\\Users\\user\\Downloads\\GWAM\\data\\raw\\escitalopram__depression_with_results.csv",
+  "n_trials_selection_pool": 9,
+  "n_trials_results_only_pool": 9,
+  "lambda_target": "non_ghost",
+  "calibration_objective": "pmid_only",
+  "lambda_observed_registry_pmid_only_raw": 0.09586810502747813,
+  "lambda_observed_registry_non_ghost_raw": 0.8758396092000814,
+  "lambda_observed_registry_pmid_only_effective": 0.0960309256280239,
+  "lambda_observed_registry_non_ghost_effective": 0.8756287375093533,
+  "lambda_observed_registry_raw": 0.8758396092000814,
+  "lambda_observed_registry_effective": 0.8756287375093533,
+  "results_only_weight_raw": 3832.0,
+  "results_only_weight_effective": 3823.67,
+  "winsorize_pct": 99.0,
+  "simulation_settings": {
+    "mu_true_list": [
+      0.0,
+      0.1,
+      0.2
+    ],
+    "calibration_mu": 0.2546,
+    "tau2": 0.1,
+    "n_meta": 2000,
+    "p_sig": 0.95,
+    "p_nonsig_used": 0.2515277777777778,
+    "calibration_runs": 500,
+    "calibration_grid_size": 25,
+    "calibration_refine_rounds": 3,
+    "control_event_rate": 0.35,
+    "control_event_sd_logit": 0.35,
+    "allocation_min_frac_treat": 0.45,
+    "allocation_max_frac_treat": 0.55,
+    "results_only_mode": "as_unknown",
+    "results_only_mu": 0.0,
+    "results_only_sd": 0.1,
+    "ci_calibration_runs": 500,
+    "seed": 42
+  },
+  "calibration": {
+    "enabled": true,
+    "target_lambda_reporting": 0.8756287375093533,
+    "target_lambda_objective": 0.0960309256280239,
+    "p_nonsig_calibrated": 0.2515277777777778,
+    "lambda_calibrated_probe": 0.09617772449522598,
+    "lambda_calibration_abs_error": 0.00014679886720207758,
+    "lambda_calibration_max_abs_error": 0.03,
+    "lambda_calibration_within_tolerance": true,
+    "lambda_target_attainable_in_grid": true,
+    "lambda_calibration_range_grid_low": 0.08016767692831525,
+    "lambda_calibration_range_grid_high": 0.20922875545143704,
+    "n_calibration_candidates_evaluated": 91
+  },
+  "ci_calibration": {
+    "mode": "empirical",
+    "target_coverage": 0.95,
+    "calibration_mu": 0.2546,
+    "out_of_sample": true,
+    "calibration_runs_requested": 500,
+    "calibration_runs_success": 500,
+    "scenario_mu_used": 0.2546,
+    "multiplier_random_effects": 3.0693661068587277,
+    "multiplier_gwam": 7.746070933880489,
+    "multiplier_selection_ipw_random_effects": 3.3964449954322964,
+    "multiplier_pet_peese": 11.280793229769753,
+    "multiplier_bayesian_gwam": 2.0446682389725424
+  },
+  "scenario_results": [
+    {
+      "mu_true": 0.0,
+      "n_meta_requested": 2000,
+      "n_meta_success": 2000,
+      "lambda_sim_mean_pmid_only": 0.07996623626054353,
+      "lambda_sim_mean_non_ghost": 0.8595640481418729,
+      "random_effects": {
+        "n_valid": 2000.0,
+        "mean_estimate": 0.15810072305581263,
+        "bias": 0.15810072305581263,
+        "rmse": 0.4114346591723485,
+        "coverage_95": 0.848,
+        "mean_ci_width": 1.4010357623851593,
+        "coverage_calibrated": 0.9525,
+        "mean_ci_width_calibrated": 2.1940263691642787
+      },
+      "gwam_null": {
+        "n_valid": 2000.0,
+        "mean_estimate": 0.01256117196278802,
+        "bias": 0.01256117196278802,
+        "rmse": 0.04436072597766384,
+        "coverage_95": 0.924,
+        "mean_ci_width": 0.1620833746101846,
+        "coverage_calibrated": 1.0,
+        "mean_ci_width_calibrated": 0.6405659780271499
+      },
+      "selection_ipw_random_effects": {
+        "n_valid": 2000.0,
+        "mean_estimate": 0.04231351862567859,
+        "bias": 0.04231351862567859,
+        "rmse": 0.36486894141260545,
+        "coverage_95": 0.736,
+        "mean_ci_width": 0.8813404032934234,
+        "coverage_calibrated": 0.928,
+        "mean_ci_width_calibrated": 1.5272572459378726
+      },
+      "pet_peese": {
+        "n_valid": 1271.0,
+        "mean_estimate": 0.17572981727951684,
+        "bias": 0.17572981727951684,
+        "rmse": 1.048413752546947,
+        "coverage_95": 0.7442958300550747,
+        "mean_ci_width": 3.4307886725633967,
+        "coverage_calibrated": 0.9583005507474429,
+        "mean_ci_width_calibrated": 19.745927362359144
+      },
+      "bayesian_gwam": {
+        "n_valid": 2000.0,
+        "mean_estimate": 0.01289640374912531,
+        "bias": 0.01289640374912531,
+        "rmse": 0.030906958447666465,
+        "coverage_95": 1.0,
+        "mean_ci_width": 0.49590033174195786,
+        "coverage_calibrated": 1.0,
+        "mean_ci_width_calibrated": 0.5172180611440262
+      }
+    },
+    {
+      "mu_true": 0.1,
+      "n_meta_requested": 2000,
+      "n_meta_success": 2000,
+      "lambda_sim_mean_pmid_only": 0.08544958172517213,
+      "lambda_sim_mean_non_ghost": 0.8650473936065016,
+      "random_effects": {
+        "n_valid": 2000.0,
+        "mean_estimate": 0.27570248036574624,
+        "bias": 0.17570248036574623,
+        "rmse": 0.40799964332710437,
+        "coverage_95": 0.8215,
+        "mean_ci_width": 1.3644105218522928,
+        "coverage_calibrated": 0.949,
+        "mean_ci_width_calibrated": 2.136671128374927
+      },
+      "gwam_null": {
+        "n_valid": 2000.0,
+        "mean_estimate": 0.02423417636695501,
+        "bias": -0.07576582363304499,
+        "rmse": 0.08811923811578944,
+        "coverage_95": 0.526,
+        "mean_ci_width": 0.1642568475629934,
+        "coverage_calibrated": 1.0,
+        "mean_ci_width_calibrated": 0.6491557105094601
+      },
+      "selection_ipw_random_effects": {
+        "n_valid": 2000.0,
+        "mean_estimate": 0.14138237805057496,
+        "bias": 0.04138237805057497,
+        "rmse": 0.35493738409354647,
+        "coverage_95": 0.748,
+        "mean_ci_width": 0.8790241531371248,
+        "coverage_calibrated": 0.926,
+        "mean_ci_width_calibrated": 1.5232434621360718
+      },
+      "pet_peese": {
+        "n_valid": 1369.0,
+        "mean_estimate": 0.27607621340765776,
+        "bias": 0.1760762134076578,
+        "rmse": 0.9767419917494156,
+        "coverage_95": 0.7202337472607743,
+        "mean_ci_width": 3.3561421662695956,
+        "coverage_calibrated": 0.960555149744339,
+        "mean_ci_width_calibrated": 19.316298891530025
+      },
+      "bayesian_gwam": {
+        "n_valid": 2000.0,
+        "mean_estimate": 0.02379132537876039,
+        "bias": -0.0762086746212396,
+        "rmse": 0.08237223441531885,
+        "coverage_95": 1.0,
+        "mean_ci_width": 0.49606604629583695,
+        "coverage_calibrated": 1.0,
+        "mean_ci_width_calibrated": 0.5173908994237659
+      }
+    },
+    {
+      "mu_true": 0.2,
+      "n_meta_requested": 2000,
+      "n_meta_success": 2000,
+      "lambda_sim_mean_pmid_only": 0.09236115783528759,
+      "lambda_sim_mean_non_ghost": 0.871958969716617,
+      "random_effects": {
+        "n_valid": 2000.0,
+        "mean_estimate": 0.40557362419571114,
+        "bias": 0.20557362419571115,
+        "rmse": 0.39910346298361277,
+        "coverage_95": 0.81,
+        "mean_ci_width": 1.2928764725544732,
+        "coverage_calibrated": 0.9545,
+        "mean_ci_width_calibrated": 2.0246485842927386
+      },
+      "gwam_null": {
+        "n_valid": 2000.0,
+        "mean_estimate": 0.0384074158624144,
+        "bias": -0.16159258413758562,
+        "rmse": 0.16799066016654027,
+        "coverage_95": 0.071,
+        "mean_ci_width": 0.16591937645784863,
+        "coverage_calibrated": 0.9945,
+        "mean_ci_width_calibrated": 0.6557261527284265
+      },
+      "selection_ipw_random_effects": {
+        "n_valid": 2000.0,
+        "mean_estimate": 0.2483138085833999,
+        "bias": 0.04831380858339989,
+        "rmse": 0.34663684711618553,
+        "coverage_95": 0.7535,
+        "mean_ci_width": 0.8735653804220204,
+        "coverage_calibrated": 0.9485,
+        "mean_ci_width_calibrated": 1.513784063529225
+      },
+      "pet_peese": {
+        "n_valid": 1487.0,
+        "mean_estimate": 0.3531813270421021,
+        "bias": 0.15318132704210205,
+        "rmse": 0.9083269734473236,
+        "coverage_95": 0.7047747141896435,
+        "mean_ci_width": 2.9200203439655708,
+        "coverage_calibrated": 0.9596503026227303,
+        "mean_ci_width_calibrated": 16.80619679948814
+      },
+      "bayesian_gwam": {
+        "n_valid": 2000.0,
+        "mean_estimate": 0.037772553446407994,
+        "bias": -0.16222744655359203,
+        "rmse": 0.16563702268940533,
+        "coverage_95": 0.998,
+        "mean_ci_width": 0.49586847500001624,
+        "coverage_calibrated": 0.999,
+        "mean_ci_width_calibrated": 0.51718483494665
+      }
+    }
+  ]
+}

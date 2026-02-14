@@ -1,0 +1,218 @@
+{
+  "registry_csv": "C:\\Users\\user\\Downloads\\GWAM\\data\\raw\\escitalopram__depression_with_results.csv",
+  "n_trials_total": 18,
+  "n_trials_with_pmid": 4,
+  "n_trials_results_only": 9,
+  "n_trials_ghost": 5,
+  "n_results_only_with_observed_effect": 5,
+  "weights": {
+    "pmid_only": 471.0,
+    "results_only": 3832.0,
+    "ghost": 610.0,
+    "total": 4913.0,
+    "integrity_ratio_lambda_pmid_only": 0.09586810502747813,
+    "integrity_ratio_lambda_non_ghost": 0.8758396092000814
+  },
+  "inputs": {
+    "published_mu": 0.2546,
+    "published_se": 0.09616102590669738,
+    "alpha": 0.05,
+    "use_observed_results": true
+  },
+  "prior_spec": {
+    "ghost_mu_mean": 0.0,
+    "ghost_mu_sd": 0.15,
+    "ghost_sigma_grid": [
+      0.05,
+      0.1,
+      0.2,
+      0.3
+    ],
+    "results_only_mu_mean": 0.0,
+    "results_only_mu_sd": 0.15,
+    "results_only_sigma_grid": [
+      0.05,
+      0.1,
+      0.2,
+      0.3
+    ]
+  },
+  "bayesian_gwam": {
+    "reference_posterior_mean": -0.09776613074060904,
+    "reference_posterior_sd": 0.12396761945637504,
+    "reference_cri_lo": -0.3407916217862215,
+    "reference_cri_hi": 0.14525936030500342,
+    "reference_cri_width": 0.48605098209122494,
+    "reference_pr_positive": 0.2151604978995575,
+    "reference_ghost_sigma": 0.05,
+    "reference_results_only_sigma": 0.2,
+    "grid_posterior_mean_min": -0.09776613074060904,
+    "grid_posterior_mean_max": -0.09776613074060904,
+    "grid_posterior_sd_min": 0.1168337903575305,
+    "grid_posterior_sd_max": 0.1342197290270261,
+    "grid_cri_width_min": 0.4580807374840471,
+    "grid_cri_width_max": 0.526247349071357
+  },
+  "sensitivity_table": [
+    {
+      "ghost_sigma": 0.05,
+      "results_only_sigma": 0.05,
+      "posterior_mean": -0.09776613074060904,
+      "posterior_sd": 0.1168337903575305,
+      "cri_lo": -0.3268064994826326,
+      "cri_hi": 0.13127423800141452,
+      "cri_width": 0.4580807374840471,
+      "pr_positive": 0.20135342507255782
+    },
+    {
+      "ghost_sigma": 0.05,
+      "results_only_sigma": 0.1,
+      "posterior_mean": -0.09776613074060904,
+      "posterior_sd": 0.11829497787388114,
+      "cri_lo": -0.32967100406236116,
+      "cri_hi": 0.13413874258114306,
+      "cri_width": 0.4638097466435042,
+      "pr_positive": 0.20427144804620656
+    },
+    {
+      "ghost_sigma": 0.05,
+      "results_only_sigma": 0.2,
+      "posterior_mean": -0.09776613074060904,
+      "posterior_sd": 0.12396761945637504,
+      "cri_lo": -0.3407916217862215,
+      "cri_hi": 0.14525936030500342,
+      "cri_width": 0.48605098209122494,
+      "pr_positive": 0.2151604978995575
+    },
+    {
+      "ghost_sigma": 0.05,
+      "results_only_sigma": 0.3,
+      "posterior_mean": -0.09776613074060904,
+      "posterior_sd": 0.1328849833985952,
+      "cri_lo": -0.3582731767309232,
+      "cri_hi": 0.16274091524970513,
+      "cri_width": 0.5210140919806283,
+      "pr_positive": 0.23095057898729993
+    },
+    {
+      "ghost_sigma": 0.1,
+      "results_only_sigma": 0.05,
+      "posterior_mean": -0.09776613074060904,
+      "posterior_sd": 0.11696449528046518,
+      "cri_lo": -0.32706273274917086,
+      "cri_hi": 0.13153047126795275,
+      "cri_width": 0.4585932040171236,
+      "pr_positive": 0.2016163822616026
+    },
+    {
+      "ghost_sigma": 0.1,
+      "results_only_sigma": 0.1,
+      "posterior_mean": -0.09776613074060904,
+      "posterior_sd": 0.11842407009171999,
+      "cri_lo": -0.329924075790027,
+      "cri_hi": 0.13439181430880898,
+      "cri_width": 0.464315890098836,
+      "pr_positive": 0.20452697357374794
+    },
+    {
+      "ghost_sigma": 0.1,
+      "results_only_sigma": 0.2,
+      "posterior_mean": -0.09776613074060904,
+      "posterior_sd": 0.12409081054045537,
+      "cri_lo": -0.3410331249612631,
+      "cri_hi": 0.14550086348004504,
+      "cri_width": 0.48653398844130813,
+      "pr_positive": 0.2153894305252101
+    },
+    {
+      "ghost_sigma": 0.1,
+      "results_only_sigma": 0.3,
+      "posterior_mean": -0.09776613074060904,
+      "posterior_sd": 0.1329999150366326,
+      "cri_lo": -0.35849848812992563,
+      "cri_hi": 0.16296622664870758,
+      "cri_width": 0.5214647147786332,
+      "pr_positive": 0.2311441204762369
+    },
+    {
+      "ghost_sigma": 0.2,
+      "results_only_sigma": 0.05,
+      "posterior_mean": -0.09776613074060904,
+      "posterior_sd": 0.11748586086776684,
+      "cri_lo": -0.32808481519637683,
+      "cri_hi": 0.13255255371515873,
+      "cri_width": 0.46063736891153556,
+      "pr_positive": 0.20266148873681905
+    },
+    {
+      "ghost_sigma": 0.2,
+      "results_only_sigma": 0.1,
+      "posterior_mean": -0.09776613074060904,
+      "posterior_sd": 0.11893903785013109,
+      "cri_lo": -0.3309336159659966,
+      "cri_hi": 0.13540135448477852,
+      "cri_width": 0.4663349704507751,
+      "pr_positive": 0.20554265548809625
+    },
+    {
+      "ghost_sigma": 0.2,
+      "results_only_sigma": 0.2,
+      "posterior_mean": -0.09776613074060904,
+      "posterior_sd": 0.12458235672924757,
+      "cri_lo": -0.34199674961120535,
+      "cri_hi": 0.1464644881299873,
+      "cri_width": 0.48846123774119266,
+      "pr_positive": 0.21629978319197102
+    },
+    {
+      "ghost_sigma": 0.2,
+      "results_only_sigma": 0.3,
+      "posterior_mean": -0.09776613074060904,
+      "posterior_sd": 0.1334586518266156,
+      "cri_lo": -0.3593977934012149,
+      "cri_hi": 0.16386553191999687,
+      "cri_width": 0.5232633253212118,
+      "pr_positive": 0.23191419303851118
+    },
+    {
+      "ghost_sigma": 0.3,
+      "results_only_sigma": 0.05,
+      "posterior_mean": -0.09776613074060904,
+      "posterior_sd": 0.11834969968931389,
+      "cri_lo": -0.3297782804311804,
+      "cri_hi": 0.13424601894996235,
+      "cri_width": 0.46402429938114276,
+      "pr_positive": 0.20437980941680106
+    },
+    {
+      "ghost_sigma": 0.3,
+      "results_only_sigma": 0.1,
+      "posterior_mean": -0.09776613074060904,
+      "posterior_sd": 0.11979239807861528,
+      "cri_lo": -0.33260653902022325,
+      "cri_hi": 0.13707427753900514,
+      "cri_width": 0.4696808165592284,
+      "pr_positive": 0.2072129869982413
+    },
+    {
+      "ghost_sigma": 0.3,
+      "results_only_sigma": 0.2,
+      "posterior_mean": -0.09776613074060904,
+      "posterior_sd": 0.1253973186353042,
+      "cri_lo": -0.3435943967893266,
+      "cri_hi": 0.14806213530810847,
+      "cri_width": 0.49165653209743504,
+      "pr_positive": 0.21779819719406474
+    },
+    {
+      "ghost_sigma": 0.3,
+      "results_only_sigma": 0.3,
+      "posterior_mean": -0.09776613074060904,
+      "posterior_sd": 0.1342197290270261,
+      "cri_lo": -0.3608898052762875,
+      "cri_hi": 0.16535754379506945,
+      "cri_width": 0.526247349071357,
+      "pr_positive": 0.23318328710309433
+    }
+  ]
+}

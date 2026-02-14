@@ -1,0 +1,7 @@
+run_date,intervention,condition,total_completed,with_pmid,unpublished_with_results,ghost_protocols,ghost_ratio,with_results
+2026-02-13,sertraline,depression,7,2,2,3,0.428571,3
+2026-02-13,escitalopram,depression,18,12,1,5,0.277778,9
+2026-02-13,duloxetine,depression,5,3,1,1,0.200000,4
+2026-02-13,quetiapine,depression,5,3,2,0,0.000000,5
+2026-02-13,pregabalin,neuropathic pain,0,0,0,0,0.000000,0
+2026-02-13,oseltamivir,influenza,0,0,0,0,0.000000,0

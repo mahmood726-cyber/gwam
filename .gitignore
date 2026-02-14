@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Benchmark outputs (regenerable)
+pairwise70_benchmark/
+pairwise70_benchmark_sensitivity/
+pairwise70_benchmark_smoke/
+pairwise70_benchmark_smoke_final/
+pairwise70_benchmark_smoke_methods/
+pairwise70_benchmark_smoke_methods_unclipped/
+pairwise70_benchmark_smoke_regression/
+
+# Working notes
+plans/
+reports/
+paper_review.md

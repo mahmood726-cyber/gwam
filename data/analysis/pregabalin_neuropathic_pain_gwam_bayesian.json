@@ -1,0 +1,218 @@
+{
+  "registry_csv": "C:\\Users\\user\\Downloads\\GWAM\\data\\raw\\pregabalin__neuropathic_pain_with_results.csv",
+  "n_trials_total": 35,
+  "n_trials_with_pmid": 1,
+  "n_trials_results_only": 25,
+  "n_trials_ghost": 9,
+  "n_results_only_with_observed_effect": 18,
+  "weights": {
+    "pmid_only": 104.0,
+    "results_only": 5720.0,
+    "ghost": 1597.0,
+    "total": 7421.0,
+    "integrity_ratio_lambda_pmid_only": 0.014014283789246733,
+    "integrity_ratio_lambda_non_ghost": 0.784799892197817
+  },
+  "inputs": {
+    "published_mu": 0.916,
+    "published_se": 0.14841946906350886,
+    "alpha": 0.05,
+    "use_observed_results": true
+  },
+  "prior_spec": {
+    "ghost_mu_mean": 0.0,
+    "ghost_mu_sd": 0.15,
+    "ghost_sigma_grid": [
+      0.05,
+      0.1,
+      0.2,
+      0.3
+    ],
+    "results_only_mu_mean": 0.0,
+    "results_only_mu_sd": 0.15,
+    "results_only_sigma_grid": [
+      0.05,
+      0.1,
+      0.2,
+      0.3
+    ]
+  },
+  "bayesian_gwam": {
+    "reference_posterior_mean": -0.23432060738589605,
+    "reference_posterior_sd": 0.07618399088034006,
+    "reference_cri_lo": -0.3836713158588011,
+    "reference_cri_hi": -0.08496989891299098,
+    "reference_cri_width": 0.2987014169458101,
+    "reference_pr_positive": 0.0010499755132001298,
+    "reference_ghost_sigma": 0.05,
+    "reference_results_only_sigma": 0.3,
+    "grid_posterior_mean_min": -0.23432060738589605,
+    "grid_posterior_mean_max": -0.23432060738589605,
+    "grid_posterior_sd_min": 0.07370331830188429,
+    "grid_posterior_sd_max": 0.0807577831887711,
+    "grid_cri_width_min": 0.2889752211190887,
+    "grid_cri_width_max": 0.3166342953308511
+  },
+  "sensitivity_table": [
+    {
+      "ghost_sigma": 0.05,
+      "results_only_sigma": 0.05,
+      "posterior_mean": -0.23432060738589605,
+      "posterior_sd": 0.07370331830188429,
+      "cri_lo": -0.3788082179454404,
+      "cri_hi": -0.08983299682635174,
+      "cri_width": 0.2889752211190887,
+      "pr_positive": 0.0007383064618183832
+    },
+    {
+      "ghost_sigma": 0.05,
+      "results_only_sigma": 0.1,
+      "posterior_mean": -0.23432060738589605,
+      "posterior_sd": 0.0739192094728236,
+      "cri_lo": -0.3792314498995588,
+      "cri_hi": -0.08940976487223326,
+      "cri_width": 0.2898216850273255,
+      "pr_positive": 0.0007623113273863558
+    },
+    {
+      "ghost_sigma": 0.05,
+      "results_only_sigma": 0.2,
+      "posterior_mean": -0.23432060738589605,
+      "posterior_sd": 0.07477654131210125,
+      "cri_lo": -0.380912158879397,
+      "cri_hi": -0.0877290558923951,
+      "cri_width": 0.2931831029870019,
+      "pr_positive": 0.0008633473946108583
+    },
+    {
+      "ghost_sigma": 0.05,
+      "results_only_sigma": 0.3,
+      "posterior_mean": -0.23432060738589605,
+      "posterior_sd": 0.07618399088034006,
+      "cri_lo": -0.3836713158588011,
+      "cri_hi": -0.08496989891299098,
+      "cri_width": 0.2987014169458101,
+      "pr_positive": 0.0010499755132001298
+    },
+    {
+      "ghost_sigma": 0.1,
+      "results_only_sigma": 0.05,
+      "posterior_mean": -0.23432060738589605,
+      "posterior_sd": 0.0741195418115005,
+      "cri_lo": -0.37962418039799684,
+      "cri_hi": -0.0890170343737953,
+      "cri_width": 0.29060714602420157,
+      "pr_positive": 0.0007850967727873748
+    },
+    {
+      "ghost_sigma": 0.1,
+      "results_only_sigma": 0.1,
+      "posterior_mean": -0.23432060738589605,
+      "posterior_sd": 0.07433422414154246,
+      "cri_lo": -0.3800450425465648,
+      "cri_hi": -0.08859617222522734,
+      "cri_width": 0.2914488703213375,
+      "pr_positive": 0.0008100669603143817
+    },
+    {
+      "ghost_sigma": 0.1,
+      "results_only_sigma": 0.2,
+      "posterior_mean": -0.23432060738589605,
+      "posterior_sd": 0.07518682384725588,
+      "cri_lo": -0.3817164746758174,
+      "cri_hi": -0.08692474009597473,
+      "cri_width": 0.29479173457984265,
+      "pr_positive": 0.0009150224562692322
+    },
+    {
+      "ghost_sigma": 0.1,
+      "results_only_sigma": 0.3,
+      "posterior_mean": -0.23432060738589605,
+      "posterior_sd": 0.07658673394324657,
+      "cri_lo": -0.38446085131215,
+      "cri_hi": -0.08418036345964211,
+      "cri_width": 0.30028048785250794,
+      "pr_positive": 0.0011083650716943727
+    },
+    {
+      "ghost_sigma": 0.2,
+      "results_only_sigma": 0.05,
+      "posterior_mean": -0.23432060738589605,
+      "posterior_sd": 0.07576157256088582,
+      "cri_lo": -0.3828432091325269,
+      "cri_hi": -0.0857980056392652,
+      "cri_width": 0.2970452034932617,
+      "pr_positive": 0.0009911586146920115
+    },
+    {
+      "ghost_sigma": 0.2,
+      "results_only_sigma": 0.1,
+      "posterior_mean": -0.23432060738589605,
+      "posterior_sd": 0.07597161494450852,
+      "cri_lo": -0.38325497515371976,
+      "cri_hi": -0.08538623961807237,
+      "cri_width": 0.2978687355356474,
+      "pr_positive": 0.0010200975226739573
+    },
+    {
+      "ghost_sigma": 0.2,
+      "results_only_sigma": 0.2,
+      "posterior_mean": -0.23432060738589605,
+      "posterior_sd": 0.07680604063997754,
+      "cri_lo": -0.38489077904566904,
+      "cri_hi": -0.08375043572612303,
+      "cri_width": 0.301140343319546,
+      "pr_positive": 0.0011411261904187842
+    },
+    {
+      "ghost_sigma": 0.2,
+      "results_only_sigma": 0.3,
+      "posterior_mean": -0.23432060738589605,
+      "posterior_sd": 0.07817696089414856,
+      "cri_lo": -0.38757832414345594,
+      "cri_hi": -0.08106289062833616,
+      "cri_width": 0.3065154335151198,
+      "pr_positive": 0.0013618667384013294
+    },
+    {
+      "ghost_sigma": 0.3,
+      "results_only_sigma": 0.05,
+      "posterior_mean": -0.23432060738589605,
+      "posterior_sd": 0.07842192428025274,
+      "cri_lo": -0.3880585491204074,
+      "cri_hi": -0.0805826656513847,
+      "cri_width": 0.30747588346902266,
+      "pr_positive": 0.001404288108002083
+    },
+    {
+      "ghost_sigma": 0.3,
+      "results_only_sigma": 0.1,
+      "posterior_mean": -0.23432060738589605,
+      "posterior_sd": 0.07862485998840314,
+      "cri_lo": -0.3884563832511281,
+      "cri_hi": -0.08018483152066402,
+      "cri_width": 0.30827155173046406,
+      "pr_positive": 0.0014401337823090055
+    },
+    {
+      "ghost_sigma": 0.3,
+      "results_only_sigma": 0.2,
+      "posterior_mean": -0.23432060738589605,
+      "posterior_sd": 0.07943141827834378,
+      "cri_lo": -0.3900375560229317,
+      "cri_hi": -0.07860365874886038,
+      "cri_width": 0.31143389727407134,
+      "pr_positive": 0.0015890040939983696
+    },
+    {
+      "ghost_sigma": 0.3,
+      "results_only_sigma": 0.3,
+      "posterior_mean": -0.23432060738589605,
+      "posterior_sd": 0.0807577831887711,
+      "cri_lo": -0.3926377550513216,
+      "cri_hi": -0.07600345972047054,
+      "cri_width": 0.3166342953308511,
+      "pr_positive": 0.0018567645031630775
+    }
+  ]
+}

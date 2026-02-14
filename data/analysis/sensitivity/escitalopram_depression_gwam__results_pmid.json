@@ -1,0 +1,38 @@
+{
+  "registry_csv": "C:\\Users\\user\\Downloads\\GWAM\\data\\raw\\escitalopram__depression.csv",
+  "n_trials_total": 18,
+  "n_trials_with_pmid": 12,
+  "n_trials_results_only_no_pmid": 1,
+  "n_trials_ghost_with_results_no_pmid": 0,
+  "n_trials_observed_non_ghost_proxy": 13,
+  "n_trials_pmid_only": 12,
+  "n_trials_results_only": 1,
+  "n_trials_ghost_proxy": 5,
+  "weights": {
+    "pmid_only": 4278.0,
+    "results_only_no_pmid": 25.0,
+    "observed_non_ghost": 4303.0,
+    "ghost": 610.0,
+    "total": 4913.0,
+    "integrity_ratio_lambda_pmid_only": 0.8707510685935274,
+    "integrity_ratio_lambda_non_ghost": 0.8758396092000814
+  },
+  "inputs": {
+    "published_mu": 0.25464221837358075,
+    "sim_n": 5000,
+    "results_only_mode": "as_unknown",
+    "results_only_mu": 0.0,
+    "results_only_sd": 0.1,
+    "ghost_mu": 0.0,
+    "ghost_sd": 0.1,
+    "seed": 42
+  },
+  "estimates": {
+    "mu_random_effects_published_only": 0.25464221837358075,
+    "mu_gwam_null_point": 0.2217299837578218,
+    "mu_gwam_sim_mean": 0.22182281090189568,
+    "mu_gwam_sim_sd": 0.006481875768643403,
+    "mu_gwam_sim_q025": 0.20912640742096886,
+    "mu_gwam_sim_q975": 0.23445450347306057
+  }
+}

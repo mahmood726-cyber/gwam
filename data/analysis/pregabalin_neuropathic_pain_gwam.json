@@ -1,0 +1,38 @@
+{
+  "registry_csv": "C:\\Users\\user\\Downloads\\GWAM\\data\\raw\\pregabalin__neuropathic_pain_with_results.csv",
+  "n_trials_total": 35,
+  "n_trials_with_pmid": 1,
+  "n_trials_results_only_no_pmid": 25,
+  "n_trials_ghost_with_results_no_pmid": 0,
+  "n_trials_observed_non_ghost_proxy": 26,
+  "n_trials_pmid_only": 1,
+  "n_trials_results_only": 25,
+  "n_trials_ghost_proxy": 9,
+  "weights": {
+    "pmid_only": 104.0,
+    "results_only_no_pmid": 5720.0,
+    "observed_non_ghost": 5824.0,
+    "ghost": 1597.0,
+    "total": 7421.0,
+    "integrity_ratio_lambda_pmid_only": 0.014014283789246733,
+    "integrity_ratio_lambda_non_ghost": 0.784799892197817
+  },
+  "inputs": {
+    "published_mu": 0.916,
+    "sim_n": 2000,
+    "results_only_mode": "as_unknown",
+    "results_only_mu": 0.0,
+    "results_only_sd": 0.1,
+    "ghost_mu": 0.0,
+    "ghost_sd": 0.1,
+    "seed": 42
+  },
+  "estimates": {
+    "mu_random_effects_published_only": 0.916,
+    "mu_gwam_null_point": 0.012837083950950009,
+    "mu_gwam_sim_mean": 0.012856525559669648,
+    "mu_gwam_sim_sd": 0.0220302376683122,
+    "mu_gwam_sim_q025": -0.02937371601523715,
+    "mu_gwam_sim_q975": 0.05797610313258702
+  }
+}
