@@ -119,8 +119,11 @@ def _order_groups_by_arm_type(
     return group_ids[0], group_ids[1]
 
 
-def fetch_results_section(nct_id: str, timeout_sec: float) -> dict | None:
-    """Fetch the results section for a trial from CT.gov API v2."""
+def fetch_results_section(
+    nct_id: str, timeout_sec: float, *, attempts: int = 3,
+    session: requests.Session | None = None,
+) -> dict | None:
+    """Fetch the results section for a trial from CT.gov API v2 (with retry)."""
     if not _NCT_FORMAT.match(nct_id):
         return None
     url = f"{API_BASE}/{nct_id}"
@@ -131,16 +134,21 @@ def fetch_results_section(nct_id: str, timeout_sec: float) -> dict | None:
             "protocolSection.statusModule.overallStatus"
         ),
     }
-    try:
-        resp = requests.get(url, params=params, timeout=timeout_sec)
-        if resp.status_code == 404:
-            return None
-        resp.raise_for_status()
-        return resp.json()
-    except (requests.RequestException, ValueError) as exc:
-        # ValueError covers json.JSONDecodeError (subclass) for non-JSON responses
-        print(f"  [WARN] {nct_id}: request failed ({type(exc).__name__}: {exc})")
-        return None
+    getter = session or requests
+    for attempt in range(1, attempts + 1):
+        try:
+            resp = getter.get(url, params=params, timeout=timeout_sec)
+            if resp.status_code == 404:
+                return None
+            resp.raise_for_status()
+            return resp.json()
+        except (requests.RequestException, ValueError) as exc:
+            # ValueError covers json.JSONDecodeError (subclass) for non-JSON responses
+            if attempt == attempts:
+                print(f"  [WARN] {nct_id}: request failed after {attempts} attempts ({type(exc).__name__}: {exc})")
+                return None
+            sleep_s = min(8.0, 1.5 * (2 ** (attempt - 1)))
+            time.sleep(sleep_s)
 
 
 def _match_outcome(title: str, keywords: list[str]) -> bool:
@@ -499,6 +507,9 @@ def main() -> int:
     n_extracted = 0
     n_failed = 0
 
+    session = requests.Session()
+    session.headers["User-Agent"] = "GWAM-pipeline/1.0 (clinicaltrials.gov registry analysis)"
+
     for row in rows:
         row.setdefault("results_effect", "")
         row.setdefault("results_se", "")
@@ -521,7 +532,7 @@ def main() -> int:
 
         n_attempted += 1
 
-        payload = fetch_results_section(nct_id, args.timeout_sec)
+        payload = fetch_results_section(nct_id, args.timeout_sec, session=session)
         if payload is None:
             n_failed += 1
             if args.sleep_sec > 0:

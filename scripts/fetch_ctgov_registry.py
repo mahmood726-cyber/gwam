@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import datetime
 import time
 from pathlib import Path
 
@@ -197,7 +198,8 @@ def request_json_with_retry(
                 break
             sleep_s = min(12.0, 1.5 * (2 ** (attempt - 1)))
             time.sleep(sleep_s)
-    assert last_error is not None
+    if last_error is None:
+        raise RuntimeError("request_json_with_retry: no attempts made")
     raise last_error
 
 
@@ -231,6 +233,7 @@ def main() -> int:
     next_page_token: str | None = None
     pages_fetched = 0
     with requests.Session() as session:
+        session.headers["User-Agent"] = "GWAM-pipeline/1.0 (clinicaltrials.gov registry analysis)"
         while pages_fetched < args.max_pages:
             if next_page_token:
                 params["pageToken"] = next_page_token
@@ -341,11 +344,13 @@ def main() -> int:
     else:
         median_n = 100
 
+    query_date = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     for row in rows:
         n_str = str(row["enrollment_count"]).strip()
         weight_n = int(n_str) if n_str else median_n
         row["weight_n"] = weight_n
         row["weight_n_imputation"] = "none" if n_str else "median"
+        row["query_date_utc"] = query_date
 
     fieldnames = [
         "nct_id",
@@ -371,6 +376,7 @@ def main() -> int:
         "is_ghost_protocol",
         "weight_n",
         "weight_n_imputation",
+        "query_date_utc",
     ]
     # Sanitize string cells against spreadsheet formula injection (P1-5)
     for row in rows:

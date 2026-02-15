@@ -81,7 +81,8 @@ def request_json_with_retry(
                 break
             sleep_s = min(12.0, 1.5 * (2 ** (attempt - 1)))
             time.sleep(sleep_s)
-    assert last_error is not None
+    if last_error is None:
+        raise RuntimeError("request_json_with_retry: no attempts made")
     raise last_error
 
 

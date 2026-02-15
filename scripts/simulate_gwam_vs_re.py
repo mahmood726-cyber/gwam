@@ -184,7 +184,8 @@ def parse_args() -> argparse.Namespace:
 
 
 def logistic(x: np.ndarray) -> np.ndarray:
-    return 1.0 / (1.0 + np.exp(-x))
+    from scipy.special import expit  # numerically stable sigmoid
+    return expit(x)
 
 
 def random_effects_dl(
@@ -727,6 +728,8 @@ def calibrate_p_nonsig(
 
 def main() -> int:
     args = parse_args()
+    if args.n_meta < 2:
+        raise ValueError(f"--n-meta={args.n_meta} must be at least 2 for meaningful Monte Carlo.")
     if args.n_meta > 10_000_000:
         raise ValueError(f"--n-meta={args.n_meta} exceeds maximum of 10,000,000.")
     args.output_json.parent.mkdir(parents=True, exist_ok=True)

@@ -342,12 +342,15 @@ def load_registry_weights(
 
 
 def parse_float_list(text: str) -> list[float]:
-    """Parse comma-separated floats."""
+    """Parse comma-separated floats (rejects NaN/Inf)."""
     out: list[float] = []
     for token in text.split(","):
         token = token.strip()
         if token:
-            out.append(float(token))
+            val = float(token)
+            if not math.isfinite(val):
+                raise ValueError(f"Non-finite value in float list: {token!r}")
+            out.append(val)
     return out
 
 

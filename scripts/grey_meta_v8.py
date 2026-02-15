@@ -161,7 +161,22 @@ class GRMA:
         k = len(y)
 
         if k < 3:
-            return _hk_reml(y, v)
+            hk = _hk_reml(y, v)
+            return {
+                "estimate": hk["estimate"],
+                "weights": np.full(k, 1.0 / k),
+                "w_max": 1.0 / k,
+                "n_eff": float(k),
+                "anchor_y": np.nan,
+                "anchor_p": np.nan,
+                "guard_values": None,
+                "k": k,
+                "method": "HK_REML_fallback",
+                "se": hk["se"],
+                "ci_lo": hk["ci_lo"],
+                "ci_hi": hk["ci_hi"],
+                "tau2": hk.get("tau2", np.nan),
+            }
 
         res = self._core(y, v)
         w = res["weights"]
@@ -216,7 +231,7 @@ class GRMA:
             try:
                 rb = self._core(y[idx], v[idx])
                 boot_est[b] = rb["estimate"]
-            except (ValueError, FloatingPointError, ZeroDivisionError, RuntimeWarning):
+            except (ValueError, FloatingPointError, ZeroDivisionError):
                 boot_est[b] = np.nan
 
         boot_ok = boot_est[np.isfinite(boot_est)]
@@ -246,7 +261,7 @@ class GRMA:
 
         if bca and n_ok >= 50:
             # Bias correction z0
-            prop_below = np.mean(boot_ok < est0)
+            prop_below = np.mean(boot_ok <= est0)
             prop_below = max(1 / (2 * n_ok), min(1 - 1 / (2 * n_ok), prop_below))
             z0 = stats.norm.ppf(prop_below)
 
@@ -258,7 +273,7 @@ class GRMA:
                 try:
                     rj = self._core(y[mask], v[mask])
                     jack_est[i] = rj["estimate"]
-                except (ValueError, FloatingPointError, ZeroDivisionError, RuntimeWarning):
+                except (ValueError, FloatingPointError, ZeroDivisionError):
                     jack_est[i] = np.nan
 
             jack_ok_mask = np.isfinite(jack_est)
@@ -277,19 +292,26 @@ class GRMA:
             else:
                 a_hat = 0.0
 
-            # Adjusted percentiles
+            # Adjusted percentiles (guard denominator against zero)
             z_lo = stats.norm.ppf(alpha / 2)
             z_hi = stats.norm.ppf(1 - alpha / 2)
 
-            adj_lo = stats.norm.cdf(z0 + (z0 + z_lo) / (1 - a_hat * (z0 + z_lo)))
-            adj_hi = stats.norm.cdf(z0 + (z0 + z_hi) / (1 - a_hat * (z0 + z_hi)))
+            denom_lo = 1 - a_hat * (z0 + z_lo)
+            denom_hi = 1 - a_hat * (z0 + z_hi)
+            if abs(denom_lo) < 1e-10 or abs(denom_hi) < 1e-10:
+                # Fall back to percentile CI when BCa adjustment is degenerate
+                ci_lo_bca = ci_lo_pct
+                ci_hi_bca = ci_hi_pct
+            else:
+                adj_lo = stats.norm.cdf(z0 + (z0 + z_lo) / denom_lo)
+                adj_hi = stats.norm.cdf(z0 + (z0 + z_hi) / denom_hi)
 
-            # Clamp
-            adj_lo = max(0.5 / n_ok, min(1 - 0.5 / n_ok, adj_lo))
-            adj_hi = max(0.5 / n_ok, min(1 - 0.5 / n_ok, adj_hi))
+                # Clamp
+                adj_lo = max(0.5 / n_ok, min(1 - 0.5 / n_ok, adj_lo))
+                adj_hi = max(0.5 / n_ok, min(1 - 0.5 / n_ok, adj_hi))
 
-            ci_lo_bca = float(np.percentile(boot_ok, 100 * adj_lo, method="linear"))
-            ci_hi_bca = float(np.percentile(boot_ok, 100 * adj_hi, method="linear"))
+                ci_lo_bca = float(np.percentile(boot_ok, 100 * adj_lo, method="linear"))
+                ci_hi_bca = float(np.percentile(boot_ok, 100 * adj_hi, method="linear"))
 
         # P-value
         if se > 1e-15:
@@ -442,15 +464,15 @@ def _dl_random_effects(yi, vi):
     }
 
 
-def _reml_random_effects(yi, vi, max_iter=100, tol=1e-8):
-    """REML random-effects meta-analysis (Fisher scoring)."""
+def _pm_random_effects(yi, vi, max_iter=100, tol=1e-8):
+    """Iterative random-effects meta-analysis (Paule-Mandel-type iteration seeded from DL)."""
     y = np.asarray(yi, dtype=np.float64)
     v = np.maximum(np.asarray(vi, dtype=np.float64), 1e-15)
     k = len(y)
 
     # Start from DL estimate
     dl = _dl_random_effects(y, v)
-    tau2 = dl.get("tau2", 0.01)
+    tau2 = dl.get("tau2", 0.0)
 
     for _ in range(max_iter):
         w = 1.0 / (v + tau2)
@@ -472,7 +494,7 @@ def _reml_random_effects(yi, vi, max_iter=100, tol=1e-8):
     se = float(np.sqrt(1.0 / np.sum(w)))
     z = stats.norm.ppf(0.975)
     return {
-        "method": "REML_RE",
+        "method": "PM_RE",
         "estimate": est,
         "se": se,
         "ci_lo": est - z * se,
@@ -482,19 +504,20 @@ def _reml_random_effects(yi, vi, max_iter=100, tol=1e-8):
 
 
 def _hk_reml(yi, vi):
-    """Hartung-Knapp with REML tau^2."""
+    """Hartung-Knapp with Paule-Mandel tau^2."""
     y = np.asarray(yi, dtype=np.float64)
     v = np.maximum(np.asarray(vi, dtype=np.float64), 1e-15)
     k = len(y)
 
-    reml = _reml_random_effects(y, v)
+    reml = _pm_random_effects(y, v)
     tau2 = reml.get("tau2", 0.0)
     est = reml["estimate"]
 
     w = 1.0 / (v + tau2)
-    # HK adjustment factor
+    # HK adjustment factor (guard: q_hk >= se_wald^2 to avoid zero SE)
     q_hk = np.sum(w * (y - est) ** 2) / (k - 1)
-    se_hk = float(np.sqrt(q_hk / np.sum(w)))
+    se_wald = float(np.sqrt(1.0 / np.sum(w)))
+    se_hk = float(np.sqrt(max(q_hk, se_wald**2) / np.sum(w)))
 
     df = max(1, k - 1)
     t_crit = stats.t.ppf(0.975, df)
@@ -515,7 +538,7 @@ def _huber_iv(yi, vi, huber_k=1.345, max_iter=50, tol=1e-6):
     k = len(y)
 
     # Initial REML fit for tau2
-    reml = _reml_random_effects(y, v)
+    reml = _pm_random_effects(y, v)
     tau2 = reml.get("tau2", 0.0)
     est = reml["estimate"]
 
@@ -531,8 +554,10 @@ def _huber_iv(yi, vi, huber_k=1.345, max_iter=50, tol=1e-6):
             break
         est = est_new
 
-    # Sandwich SE
-    se = float(np.sqrt(np.sum((w / np.sum(w)) ** 2 * total_var)))
+    # Sandwich SE using final residuals and weights
+    resid2 = (y - est) ** 2
+    w_norm = w / np.sum(w)
+    se = float(np.sqrt(np.sum(w_norm**2 * resid2)))
     z = stats.norm.ppf(0.975)
     return {
         "method": "HuberIV",
@@ -550,7 +575,7 @@ def _t_re(yi, vi, df_t=4, max_iter=100, tol=1e-8):
     k = len(y)
 
     # Start from REML
-    reml = _reml_random_effects(y, v)
+    reml = _pm_random_effects(y, v)
     tau2 = reml.get("tau2", 0.0)
     est = reml["estimate"]
 
@@ -566,7 +591,10 @@ def _t_re(yi, vi, df_t=4, max_iter=100, tol=1e-8):
             break
         est = est_new
 
-    se = float(np.sqrt(1.0 / np.sum(w)))
+    # Sandwich SE using final residuals and weights
+    resid2 = (y - est) ** 2
+    w_norm = w / np.sum(w)
+    se = float(np.sqrt(np.sum(w_norm**2 * resid2)))
     z = stats.norm.ppf(0.975)
     return {
         "method": "tRE_df4",
@@ -588,15 +616,24 @@ def compare_methods(effect, variance, seed=None):
 
     results = []
 
-    # Standard methods
-    for fn in [_iv_fixed_effect, _dl_random_effects, _reml_random_effects,
+    # Standard methods — map function to canonical method name for error entries
+    _method_names = {
+        _iv_fixed_effect: "IV_FE",
+        _dl_random_effects: "DL_RE",
+        _pm_random_effects: "PM_RE",
+        _hk_reml: "HK_REML",
+        _huber_iv: "HuberIV",
+        _t_re: "tRE_df4",
+    }
+    for fn in [_iv_fixed_effect, _dl_random_effects, _pm_random_effects,
                _hk_reml, _huber_iv, _t_re]:
         try:
             r = fn(y, v)
             results.append(r)
         except Exception as e:
-            results.append({"method": fn.__name__, "estimate": np.nan,
-                            "se": np.nan, "ci_lo": np.nan, "ci_hi": np.nan,
+            results.append({"method": _method_names.get(fn, fn.__name__),
+                            "estimate": np.nan, "se": np.nan,
+                            "ci_lo": np.nan, "ci_hi": np.nan,
                             "error": str(e)})
 
     # GRMA with guard
@@ -693,7 +730,7 @@ def simulate_scenario(k, true_effect, tau2, scenario_type="ideal",
     methods_to_test = {
         "IV_FE": _iv_fixed_effect,
         "DL_RE": _dl_random_effects,
-        "REML_RE": _reml_random_effects,
+        "PM_RE": _pm_random_effects,
         "HK_REML": _hk_reml,
         "HuberIV": _huber_iv,
         "tRE_df4": _t_re,
@@ -737,25 +774,28 @@ def simulate_scenario(k, true_effect, tau2, scenario_type="ideal",
         if len(yi) < 3:
             continue
 
+        _NUM_ERRORS = (ValueError, FloatingPointError, ZeroDivisionError,
+                       np.linalg.LinAlgError, OverflowError)
+
         # Fit standard methods
         for name, fn in methods_to_test.items():
             try:
                 r = fn(yi, vi)
                 all_estimates[name].append(r["estimate"])
-            except Exception:
+            except _NUM_ERRORS:
                 pass
 
         # Fit GRMA
         try:
             r_g = g_guard._core(yi, vi)
             all_estimates["GRMA"].append(r_g["estimate"])
-        except Exception:
+        except _NUM_ERRORS:
             pass
 
         try:
             r_ng = g_noguard._core(yi, vi)
             all_estimates["GRMA_noguard"].append(r_ng["estimate"])
-        except Exception:
+        except _NUM_ERRORS:
             pass
 
     # Compute bias and RMSE
@@ -771,6 +811,7 @@ def simulate_scenario(k, true_effect, tau2, scenario_type="ideal",
             "bias": bias,
             "rmse": rmse,
             "n_ok": len(ests),
+            "seed": seed,
         })
 
     return results

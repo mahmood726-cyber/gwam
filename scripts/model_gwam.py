@@ -77,6 +77,8 @@ def quantile(values: np.ndarray, q: float) -> float:
 
 def main() -> int:
     args = parse_args()
+    if args.sim_n < 2:
+        raise ValueError(f"--sim-n={args.sim_n} must be at least 2 for meaningful Monte Carlo.")
     if args.sim_n > 10_000_000:
         raise ValueError(f"--sim-n={args.sim_n} exceeds maximum of 10,000,000.")
     args.output_json.parent.mkdir(parents=True, exist_ok=True)

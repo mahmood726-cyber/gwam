@@ -66,23 +66,9 @@ def sanitize_path_component(text: str) -> str:
 
 
 def normal_quantile(p: float) -> float:
-    """Approximate inverse normal CDF (Abramowitz & Stegun 26.2.23, max |error| < 4.5e-4)."""
-    if p <= 0:
-        return float("-inf")
-    if p >= 1:
-        return float("inf")
-    if p == 0.5:
-        return 0.0
-    if p < 0.5:
-        return -normal_quantile(1.0 - p)
-    t = math.sqrt(-2.0 * math.log(1.0 - p))
-    c0 = 2.515517
-    c1 = 0.802853
-    c2 = 0.010328
-    d1 = 1.432788
-    d2 = 0.189269
-    d3 = 0.001308
-    return t - (c0 + c1 * t + c2 * t * t) / (1.0 + d1 * t + d2 * t * t + d3 * t * t * t)
+    """Inverse normal CDF (exact, via scipy.stats.norm.ppf)."""
+    from scipy.stats import norm
+    return float(norm.ppf(p))
 
 
 def normalize_text(text: str) -> str:
@@ -453,7 +439,20 @@ def build_environment_metadata() -> dict[str, str]:
         "timestamp_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
     }
     try:
+        from . import __version__ as _gwam_ver
+        meta["gwam_version"] = _gwam_ver
+    except Exception:
+        meta["gwam_version"] = "unknown"
+    try:
         meta["pandas_version"] = __import__("pandas").__version__
+    except ImportError:
+        pass
+    try:
+        meta["requests_version"] = __import__("requests").__version__
+    except ImportError:
+        pass
+    try:
+        meta["pyreadr_version"] = __import__("pyreadr").__version__
     except ImportError:
         pass
     return meta

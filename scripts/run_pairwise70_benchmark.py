@@ -11,6 +11,7 @@ This script:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import re
@@ -706,7 +707,7 @@ def main() -> int:
 
     lambda_grid = parse_lambda_grid(args.lambda_grid)
     clipping_enabled = not args.disable_lambda_clipping
-    rng_lambda = np.random.default_rng(int(args.review_bootstrap_seed) + 1001)
+    _lambda_base_seed = int(args.review_bootstrap_seed) + 1001
     output_dir = args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -931,6 +932,9 @@ def main() -> int:
                     prior_beta=float(args.lambda_beta_prior_beta),
                     pseudo_concentration=float(args.lambda_pseudo_concentration),
                 )
+                # Per-analysis seed so draws are independent of processing order
+                _key_hash = int(hashlib.sha256(f"{review_id}|{analysis_key}".encode()).hexdigest(), 16)
+                rng_lambda = np.random.default_rng(_lambda_base_seed + (_key_hash % (2**31)))
                 lambda_draws_unclipped = rng_lambda.beta(
                     float(posterior["alpha"]),
                     float(posterior["beta"]),
@@ -1003,9 +1007,10 @@ def main() -> int:
                         except (ValueError, FloatingPointError, ZeroDivisionError):
                             loo_ests[jj] = float("nan")
                     loo_finite = loo_ests[np.isfinite(loo_ests)]
-                    if len(loo_finite) >= 3:
+                    n_loo = len(loo_finite)
+                    if n_loo >= 3:
                         loo_mean = np.mean(loo_finite)
-                        se_grma = float(np.sqrt((k - 1) / k * np.sum((loo_finite - loo_mean) ** 2)))
+                        se_grma = float(np.sqrt((n_loo - 1) / n_loo * np.sum((loo_finite - loo_mean) ** 2)))
                     else:
                         se_grma = float("nan")
                     w_max_grma = float(grma_fit["w_max"])
