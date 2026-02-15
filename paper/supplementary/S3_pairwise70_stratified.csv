@@ -1,0 +1,8 @@
+stratification,subset,n_analyses,median_k,median_lambda_proxy,median_abs_shift,crossed_below_010_pct_all,crossed_below_020_pct_all,crossed_below_010_pct_within_re,crossed_below_020_pct_within_re
+lambda_source,ctgov_linkage_non_ghost,5569,3.0,0.8614,0.0604,0.0907,0.1171,0.1073,0.1657
+lambda_source,ctgov_transport_proxy,86,3.0,0.95,0.0876,0.1047,0.2209,0.1184,0.2754
+lambda_source,default,374,3.0,0.7,0.0976,0.0829,0.1096,0.1016,0.1687
+lambda_source,pairwise_exact_nct_non_ghost,1438,3.0,0.95,0.0318,0.0313,0.0744,0.0369,0.1041
+k_band,k_eq_2,2895,2.0,0.8936,0.0588,0.0625,0.0888,0.0718,0.1178
+k_band,k_eq_3,1409,3.0,0.8796,0.0467,0.0788,0.1008,0.095,0.1455
+k_band,k_ge_4,3163,6.0,0.8452,0.0545,0.0942,0.1328,0.1139,0.1984

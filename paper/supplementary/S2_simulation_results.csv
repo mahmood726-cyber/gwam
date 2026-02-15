@@ -1,0 +1,31 @@
+application,mu_true,method,n_valid,mean_estimate,bias,rmse,coverage_raw,coverage_calibrated,mean_ci_width_raw,mean_ci_width_calibrated,lambda_calibrated,ci_multiplier
+Escitalopram/Depression,0.0,random_effects,2000,0.158101,0.158101,0.411435,0.848,0.9525,1.401,2.194,True,3.0694
+Escitalopram/Depression,0.0,gwam_null,2000,0.012561,0.012561,0.044361,0.924,1.0,0.1621,0.6406,True,7.7461
+Escitalopram/Depression,0.0,bayesian_gwam,2000,0.012896,0.012896,0.030907,1.0,1.0,0.4959,0.5172,True,2.0447
+Escitalopram/Depression,0.0,oracle_ipw_random_effects,2000,0.042314,0.042314,0.364869,0.736,0.928,0.8813,1.5273,True,3.3964
+Escitalopram/Depression,0.0,pet_peese,1271,0.17573,0.17573,1.048414,0.7443,0.9583,3.4308,19.7459,True,11.2808
+Escitalopram/Depression,0.1,random_effects,2000,0.275702,0.175702,0.408,0.8215,0.949,1.3644,2.1367,True,3.0694
+Escitalopram/Depression,0.1,gwam_null,2000,0.024234,-0.075766,0.088119,0.526,1.0,0.1643,0.6492,True,7.7461
+Escitalopram/Depression,0.1,bayesian_gwam,2000,0.023791,-0.076209,0.082372,1.0,1.0,0.4961,0.5174,True,2.0447
+Escitalopram/Depression,0.1,oracle_ipw_random_effects,2000,0.141382,0.041382,0.354937,0.748,0.926,0.879,1.5232,True,3.3964
+Escitalopram/Depression,0.1,pet_peese,1369,0.276076,0.176076,0.976742,0.7202,0.9606,3.3561,19.3163,True,11.2808
+Escitalopram/Depression,0.2,random_effects,2000,0.405574,0.205574,0.399103,0.81,0.9545,1.2929,2.0246,True,3.0694
+Escitalopram/Depression,0.2,gwam_null,2000,0.038407,-0.161593,0.167991,0.071,0.9945,0.1659,0.6557,True,7.7461
+Escitalopram/Depression,0.2,bayesian_gwam,2000,0.037773,-0.162227,0.165637,0.998,0.999,0.4959,0.5172,True,2.0447
+Escitalopram/Depression,0.2,oracle_ipw_random_effects,2000,0.248314,0.048314,0.346637,0.7535,0.9485,0.8736,1.5138,True,3.3964
+Escitalopram/Depression,0.2,pet_peese,1487,0.353181,0.153181,0.908327,0.7048,0.9597,2.92,16.8062,True,11.2808
+Pregabalin/Neuropathic Pain,0.0,random_effects,1999,0.716053,0.716053,0.770224,0.1916,0.3832,1.1224,1.6898,False,2.9508
+Pregabalin/Neuropathic Pain,0.0,gwam_null,1999,0.045791,0.045791,0.054531,0.5598,1.0,0.1058,1.6881,False,31.267
+Pregabalin/Neuropathic Pain,0.0,bayesian_gwam,1999,0.045449,0.045449,0.050504,1.0,1.0,0.4761,1.6324,False,6.7223
+Pregabalin/Neuropathic Pain,0.0,oracle_ipw_random_effects,1999,0.609314,0.609314,0.761365,0.0925,0.3367,0.7926,1.2884,False,3.186
+Pregabalin/Neuropathic Pain,0.0,pet_peese,423,0.281096,0.281096,1.222751,0.6903,0.7612,2.1827,5.4859,False,4.9261
+Pregabalin/Neuropathic Pain,0.1,random_effects,2000,0.764728,0.664728,0.709521,0.1895,0.488,1.0285,1.5484,False,2.9508
+Pregabalin/Neuropathic Pain,0.1,gwam_null,2000,0.052236,-0.047764,0.056641,0.5135,1.0,0.1042,1.662,False,31.267
+Pregabalin/Neuropathic Pain,0.1,bayesian_gwam,2000,0.052134,-0.047866,0.053302,1.0,1.0,0.4748,1.6283,False,6.7223
+Pregabalin/Neuropathic Pain,0.1,oracle_ipw_random_effects,2000,0.692729,0.592729,0.703627,0.115,0.479,0.8164,1.327,False,3.186
+Pregabalin/Neuropathic Pain,0.1,pet_peese,575,0.336264,0.236264,0.637426,0.6417,0.7652,1.5426,3.877,False,4.9261
+Pregabalin/Neuropathic Pain,0.2,random_effects,2000,0.802307,0.602307,0.644679,0.2205,0.6055,0.9761,1.4695,False,2.9508
+Pregabalin/Neuropathic Pain,0.2,gwam_null,2000,0.058936,-0.141064,0.144629,0.0185,1.0,0.1046,1.6683,False,31.267
+Pregabalin/Neuropathic Pain,0.2,bayesian_gwam,2000,0.058755,-0.141245,0.143507,1.0,1.0,0.4744,1.6266,False,6.7223
+Pregabalin/Neuropathic Pain,0.2,oracle_ipw_random_effects,2000,0.742544,0.542544,0.646272,0.158,0.5965,0.8234,1.3384,False,3.186
+Pregabalin/Neuropathic Pain,0.2,pet_peese,773,0.339929,0.139929,0.677448,0.5744,0.771,1.5625,3.9271,False,4.9261

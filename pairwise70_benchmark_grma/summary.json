@@ -1,0 +1,405 @@
+{
+  "pairwise_data_dir": "C:\\Users\\user\\OneDrive - NHS\\Documents\\Pairwise70\\data",
+  "ctgov_covariates_csv": "C:\\Users\\user\\OneDrive - NHS\\Documents\\Pairwise70\\analysis\\transportability\\ctgov_target_covariates.csv",
+  "ctgov_linkage_csv": "pairwise70_benchmark_sensitivity\\ctgov_linkage_summary.csv",
+  "n_files_scanned": 501,
+  "n_files_with_valid_binary_analyses": 458,
+  "n_analyses_estimable": 7467,
+  "n_pet_peese_estimable": 4572,
+  "n_grma_estimable": 4572,
+  "n_selection_ipw_estimable": 7467,
+  "lambda_grid": [
+    0.2,
+    0.4,
+    0.6,
+    0.8
+  ],
+  "assumptions": {
+    "min_k": 2,
+    "min_k_pet": 3,
+    "default_lambda_proxy": 0.7,
+    "lambda_proxy_lower": 0.2,
+    "lambda_proxy_upper": 0.95,
+    "lambda_source_mode": "auto",
+    "p_sig": 0.95,
+    "lambda_uncertainty_model": "deterministic",
+    "lambda_posterior_draws": 400,
+    "lambda_beta_prior_alpha": 1.0,
+    "lambda_beta_prior_beta": 1.0,
+    "lambda_pseudo_concentration": 20.0,
+    "lambda_clipping_enabled": true,
+    "review_bootstrap_iters": 400,
+    "ipw_p_nonsig_calibration": "Solved from (q_sig*p_sig + (1-q_sig)*p_nonsig = lambda_proxy), then clipped.",
+    "gwam_mode": "Sensitivity grid + proxy lambda shrinkage on RE estimate.",
+    "gwam_significance_note": "GWAM proxy scales both mean and SE by lambda; significance-drop counts are diagnostic and expected to be invariant.",
+    "proxy_linkage_note": "Auto lambda now prefers exact Pairwise70 NCT linkage (when available), then query-derived CT.gov linkage/proxy."
+  },
+  "headline_counts": {
+    "re_abs_effect_ge_0p10": 6305.0,
+    "gwam_proxy_abs_effect_ge_0p10": 5715.0,
+    "re_to_gwam_proxy_crossed_below_0p10": 590.0,
+    "re_to_gwam_proxy_crossed_below_0p10_pct_all": 0.07901432971742332,
+    "re_to_gwam_proxy_crossed_below_0p10_pct_within_re_ge": 0.09357652656621729,
+    "re_abs_effect_ge_0p20": 5274.0,
+    "gwam_proxy_abs_effect_ge_0p20": 4455.0,
+    "re_to_gwam_proxy_crossed_below_0p20": 819.0,
+    "re_to_gwam_proxy_crossed_below_0p20_pct_all": 0.10968260345520289,
+    "re_to_gwam_proxy_crossed_below_0p20_pct_within_re_ge": 0.1552901023890785
+  },
+  "headline_counts_unclipped_lambda_sensitivity": {
+    "re_abs_effect_ge_0p10": 6305.0,
+    "gwam_proxy_abs_effect_ge_0p10": 5597.0,
+    "re_to_gwam_proxy_crossed_below_0p10": 715.0,
+    "re_to_gwam_proxy_crossed_below_0p10_pct_all": 0.09575465381009776,
+    "re_to_gwam_proxy_crossed_below_0p10_pct_within_re_ge": 0.1134020618556701,
+    "re_abs_effect_ge_0p20": 5274.0,
+    "gwam_proxy_abs_effect_ge_0p20": 4437.0,
+    "re_to_gwam_proxy_crossed_below_0p20": 846.0,
+    "re_to_gwam_proxy_crossed_below_0p20_pct_all": 0.11329851345922057,
+    "re_to_gwam_proxy_crossed_below_0p20_pct_within_re_ge": 0.16040955631399317
+  },
+  "diagnostic_significance_invariance": {
+    "re_positive_significant": 1120,
+    "gwam_proxy_positive_significant": 1120,
+    "re_to_gwam_proxy_significance_drops": 0,
+    "re_to_gwam_proxy_drop_rate_within_re_positive": 0.0,
+    "all_equal_re_vs_gwam_positive_significant": true
+  },
+  "clustered_by_review": {
+    "n_reviews": 398,
+    "n_analyses": 7467,
+    "mean_analyses_per_review": 18.761306532663315,
+    "median_analyses_per_review": 9.0,
+    "crossed_below_0p10_pct_all_weighted": 0.07901432971742332,
+    "crossed_below_0p20_pct_all_weighted": 0.10968260345520289,
+    "crossed_below_0p10_pct_all_review_mean": 0.06480177172889946,
+    "crossed_below_0p20_pct_all_review_mean": 0.08446062153719931,
+    "crossed_below_0p10_pct_all_weighted_boot_ci_lo": 0.051100325262896686,
+    "crossed_below_0p10_pct_all_weighted_boot_ci_hi": 0.11011566310876784,
+    "crossed_below_0p20_pct_all_weighted_boot_ci_lo": 0.07213078884313247,
+    "crossed_below_0p20_pct_all_weighted_boot_ci_hi": 0.1494413483459011,
+    "bootstrap_iters": 400
+  },
+  "distribution": {
+    "median_k": 3.0,
+    "median_lambda_proxy": 0.8711540238381226,
+    "median_abs_shift_proxy": 0.054776785996273336,
+    "median_re": -0.03977217276505991,
+    "median_gwam_proxy": -0.026386941840914117,
+    "lambda_proxy_at_lower_bound_count": 422.0,
+    "lambda_proxy_at_upper_bound_count": 2633.0,
+    "lambda_proxy_at_lower_bound_pct": 0.05651533413686889,
+    "lambda_proxy_at_upper_bound_pct": 0.3526181866880943
+  },
+  "bound_free_lambda_diagnostics": {
+    "n_lambda_proxy_gt_1": 0,
+    "pct_lambda_proxy_gt_1": 0.0,
+    "n_lambda_proxy_unclipped_gt_1": 46,
+    "pct_lambda_proxy_unclipped_gt_1": 0.006160439266104192,
+    "n_lambda_proxy_unclipped_le_0": 0,
+    "pct_lambda_proxy_unclipped_le_0": 0.0
+  },
+  "stratified": {
+    "by_lambda_proxy_source": {
+      "ctgov_linkage_non_ghost": {
+        "n_analyses": 5569,
+        "distribution": {
+          "median_k": 3.0,
+          "median_lambda_proxy": 0.8614125600426971,
+          "median_abs_shift_proxy": 0.06044986808343178,
+          "median_re": -0.0617974219179706,
+          "median_gwam_proxy": -0.037141022820040406,
+          "lambda_proxy_at_lower_bound_count": 319.0,
+          "lambda_proxy_at_upper_bound_count": 1564.0,
+          "lambda_proxy_at_lower_bound_pct": 0.05728137906266834,
+          "lambda_proxy_at_upper_bound_pct": 0.2808403663135213
+        },
+        "attenuation": {
+          "re_abs_effect_ge_0p10": 4705.0,
+          "gwam_proxy_abs_effect_ge_0p10": 4200.0,
+          "re_to_gwam_proxy_crossed_below_0p10": 505.0,
+          "re_to_gwam_proxy_crossed_below_0p10_pct_all": 0.09068055306159095,
+          "re_to_gwam_proxy_crossed_below_0p10_pct_within_re_ge": 0.1073326248671626,
+          "re_abs_effect_ge_0p20": 3934.0,
+          "gwam_proxy_abs_effect_ge_0p20": 3282.0,
+          "re_to_gwam_proxy_crossed_below_0p20": 652.0,
+          "re_to_gwam_proxy_crossed_below_0p20_pct_all": 0.11707667444783623,
+          "re_to_gwam_proxy_crossed_below_0p20_pct_within_re_ge": 0.16573462125063548
+        }
+      },
+      "ctgov_transport_proxy": {
+        "n_analyses": 86,
+        "distribution": {
+          "median_k": 3.0,
+          "median_lambda_proxy": 0.95,
+          "median_abs_shift_proxy": 0.08757825751830721,
+          "median_re": 0.16069620811159258,
+          "median_gwam_proxy": 0.07659318351676035,
+          "lambda_proxy_at_lower_bound_count": 24.0,
+          "lambda_proxy_at_upper_bound_count": 46.0,
+          "lambda_proxy_at_lower_bound_pct": 0.27906976744186046,
+          "lambda_proxy_at_upper_bound_pct": 0.5348837209302325
+        },
+        "attenuation": {
+          "re_abs_effect_ge_0p10": 76.0,
+          "gwam_proxy_abs_effect_ge_0p10": 67.0,
+          "re_to_gwam_proxy_crossed_below_0p10": 9.0,
+          "re_to_gwam_proxy_crossed_below_0p10_pct_all": 0.10465116279069768,
+          "re_to_gwam_proxy_crossed_below_0p10_pct_within_re_ge": 0.11842105263157894,
+          "re_abs_effect_ge_0p20": 69.0,
+          "gwam_proxy_abs_effect_ge_0p20": 50.0,
+          "re_to_gwam_proxy_crossed_below_0p20": 19.0,
+          "re_to_gwam_proxy_crossed_below_0p20_pct_all": 0.22093023255813954,
+          "re_to_gwam_proxy_crossed_below_0p20_pct_within_re_ge": 0.2753623188405797
+        }
+      },
+      "default": {
+        "n_analyses": 374,
+        "distribution": {
+          "median_k": 3.0,
+          "median_lambda_proxy": 0.7,
+          "median_abs_shift_proxy": 0.09764190235436468,
+          "median_re": -0.06041796776007902,
+          "median_gwam_proxy": -0.042292577432055306,
+          "lambda_proxy_at_lower_bound_count": 0.0,
+          "lambda_proxy_at_upper_bound_count": 0.0,
+          "lambda_proxy_at_lower_bound_pct": 0.0,
+          "lambda_proxy_at_upper_bound_pct": 0.0
+        },
+        "attenuation": {
+          "re_abs_effect_ge_0p10": 305.0,
+          "gwam_proxy_abs_effect_ge_0p10": 274.0,
+          "re_to_gwam_proxy_crossed_below_0p10": 31.0,
+          "re_to_gwam_proxy_crossed_below_0p10_pct_all": 0.08288770053475936,
+          "re_to_gwam_proxy_crossed_below_0p10_pct_within_re_ge": 0.10163934426229508,
+          "re_abs_effect_ge_0p20": 243.0,
+          "gwam_proxy_abs_effect_ge_0p20": 202.0,
+          "re_to_gwam_proxy_crossed_below_0p20": 41.0,
+          "re_to_gwam_proxy_crossed_below_0p20_pct_all": 0.10962566844919786,
+          "re_to_gwam_proxy_crossed_below_0p20_pct_within_re_ge": 0.16872427983539096
+        }
+      },
+      "pairwise_exact_nct_non_ghost": {
+        "n_analyses": 1438,
+        "distribution": {
+          "median_k": 3.0,
+          "median_lambda_proxy": 0.95,
+          "median_abs_shift_proxy": 0.03181057101333446,
+          "median_re": 0.024292283797283633,
+          "median_gwam_proxy": 0.017792201030560117,
+          "lambda_proxy_at_lower_bound_count": 79.0,
+          "lambda_proxy_at_upper_bound_count": 1023.0,
+          "lambda_proxy_at_lower_bound_pct": 0.05493741307371349,
+          "lambda_proxy_at_upper_bound_pct": 0.7114047287899861
+        },
+        "attenuation": {
+          "re_abs_effect_ge_0p10": 1219.0,
+          "gwam_proxy_abs_effect_ge_0p10": 1174.0,
+          "re_to_gwam_proxy_crossed_below_0p10": 45.0,
+          "re_to_gwam_proxy_crossed_below_0p10_pct_all": 0.03129346314325452,
+          "re_to_gwam_proxy_crossed_below_0p10_pct_within_re_ge": 0.03691550451189499,
+          "re_abs_effect_ge_0p20": 1028.0,
+          "gwam_proxy_abs_effect_ge_0p20": 921.0,
+          "re_to_gwam_proxy_crossed_below_0p20": 107.0,
+          "re_to_gwam_proxy_crossed_below_0p20_pct_all": 0.07440890125173853,
+          "re_to_gwam_proxy_crossed_below_0p20_pct_within_re_ge": 0.10408560311284047
+        }
+      }
+    },
+    "by_k_band": {
+      "k_eq_2": {
+        "n_analyses": 2895,
+        "distribution": {
+          "median_k": 2.0,
+          "median_lambda_proxy": 0.8936165286449691,
+          "median_abs_shift_proxy": 0.058841503445835386,
+          "median_re": -0.03323870778753341,
+          "median_gwam_proxy": -0.022713286367030218,
+          "lambda_proxy_at_lower_bound_count": 136.0,
+          "lambda_proxy_at_upper_bound_count": 1138.0,
+          "lambda_proxy_at_lower_bound_pct": 0.04697754749568221,
+          "lambda_proxy_at_upper_bound_pct": 0.3930915371329879
+        },
+        "attenuation": {
+          "re_abs_effect_ge_0p10": 2520.0,
+          "gwam_proxy_abs_effect_ge_0p10": 2339.0,
+          "re_to_gwam_proxy_crossed_below_0p10": 181.0,
+          "re_to_gwam_proxy_crossed_below_0p10_pct_all": 0.06252158894645941,
+          "re_to_gwam_proxy_crossed_below_0p10_pct_within_re_ge": 0.07182539682539682,
+          "re_abs_effect_ge_0p20": 2181.0,
+          "gwam_proxy_abs_effect_ge_0p20": 1924.0,
+          "re_to_gwam_proxy_crossed_below_0p20": 257.0,
+          "re_to_gwam_proxy_crossed_below_0p20_pct_all": 0.08877374784110535,
+          "re_to_gwam_proxy_crossed_below_0p20_pct_within_re_ge": 0.1178358551123338
+        }
+      },
+      "k_eq_3": {
+        "n_analyses": 1409,
+        "distribution": {
+          "median_k": 3.0,
+          "median_lambda_proxy": 0.8796475046475046,
+          "median_abs_shift_proxy": 0.04667247659047913,
+          "median_re": -0.03017689810725225,
+          "median_gwam_proxy": -0.019958004520556995,
+          "lambda_proxy_at_lower_bound_count": 71.0,
+          "lambda_proxy_at_upper_bound_count": 504.0,
+          "lambda_proxy_at_lower_bound_pct": 0.050390347764371894,
+          "lambda_proxy_at_upper_bound_pct": 0.35770049680624555
+        },
+        "attenuation": {
+          "re_abs_effect_ge_0p10": 1168.0,
+          "gwam_proxy_abs_effect_ge_0p10": 1057.0,
+          "re_to_gwam_proxy_crossed_below_0p10": 111.0,
+          "re_to_gwam_proxy_crossed_below_0p10_pct_all": 0.07877927608232789,
+          "re_to_gwam_proxy_crossed_below_0p10_pct_within_re_ge": 0.09503424657534247,
+          "re_abs_effect_ge_0p20": 976.0,
+          "gwam_proxy_abs_effect_ge_0p20": 834.0,
+          "re_to_gwam_proxy_crossed_below_0p20": 142.0,
+          "re_to_gwam_proxy_crossed_below_0p20_pct_all": 0.10078069552874379,
+          "re_to_gwam_proxy_crossed_below_0p20_pct_within_re_ge": 0.14549180327868852
+        }
+      },
+      "k_ge_4": {
+        "n_analyses": 3163,
+        "distribution": {
+          "median_k": 6.0,
+          "median_lambda_proxy": 0.8451746218015765,
+          "median_abs_shift_proxy": 0.05446012648843901,
+          "median_re": -0.051996450914299094,
+          "median_gwam_proxy": -0.03212954461291157,
+          "lambda_proxy_at_lower_bound_count": 215.0,
+          "lambda_proxy_at_upper_bound_count": 991.0,
+          "lambda_proxy_at_lower_bound_pct": 0.06797344293392349,
+          "lambda_proxy_at_upper_bound_pct": 0.3133101485931078
+        },
+        "attenuation": {
+          "re_abs_effect_ge_0p10": 2617.0,
+          "gwam_proxy_abs_effect_ge_0p10": 2319.0,
+          "re_to_gwam_proxy_crossed_below_0p10": 298.0,
+          "re_to_gwam_proxy_crossed_below_0p10_pct_all": 0.09421435346190325,
+          "re_to_gwam_proxy_crossed_below_0p10_pct_within_re_ge": 0.1138708444784104,
+          "re_abs_effect_ge_0p20": 2117.0,
+          "gwam_proxy_abs_effect_ge_0p20": 1697.0,
+          "re_to_gwam_proxy_crossed_below_0p20": 420.0,
+          "re_to_gwam_proxy_crossed_below_0p20_pct_all": 0.13278533038254822,
+          "re_to_gwam_proxy_crossed_below_0p20_pct_within_re_ge": 0.19839395370807747
+        }
+      }
+    }
+  },
+  "robust_sensitivity_excluding_abs_mu_re_gt_4": {
+    "threshold_abs_mu_re": 4.0,
+    "n_excluded": 31,
+    "excluded_pct": 0.00415160037498326,
+    "full": {
+      "n_analyses": 7467,
+      "distribution": {
+        "median_k": 3.0,
+        "median_lambda_proxy": 0.8711540238381226,
+        "median_abs_shift_proxy": 0.054776785996273336,
+        "median_re": -0.03977217276505991,
+        "median_gwam_proxy": -0.026386941840914117,
+        "lambda_proxy_at_lower_bound_count": 422.0,
+        "lambda_proxy_at_upper_bound_count": 2633.0,
+        "lambda_proxy_at_lower_bound_pct": 0.05651533413686889,
+        "lambda_proxy_at_upper_bound_pct": 0.3526181866880943
+      },
+      "attenuation": {
+        "re_abs_effect_ge_0p10": 6305.0,
+        "gwam_proxy_abs_effect_ge_0p10": 5715.0,
+        "re_to_gwam_proxy_crossed_below_0p10": 590.0,
+        "re_to_gwam_proxy_crossed_below_0p10_pct_all": 0.07901432971742332,
+        "re_to_gwam_proxy_crossed_below_0p10_pct_within_re_ge": 0.09357652656621729,
+        "re_abs_effect_ge_0p20": 5274.0,
+        "gwam_proxy_abs_effect_ge_0p20": 4455.0,
+        "re_to_gwam_proxy_crossed_below_0p20": 819.0,
+        "re_to_gwam_proxy_crossed_below_0p20_pct_all": 0.10968260345520289,
+        "re_to_gwam_proxy_crossed_below_0p20_pct_within_re_ge": 0.1552901023890785
+      }
+    },
+    "filtered": {
+      "n_analyses": 7436,
+      "distribution": {
+        "median_k": 3.0,
+        "median_lambda_proxy": 0.8711540238381226,
+        "median_abs_shift_proxy": 0.054460871014790246,
+        "median_re": -0.04183916741687173,
+        "median_gwam_proxy": -0.026984115462823276,
+        "lambda_proxy_at_lower_bound_count": 422.0,
+        "lambda_proxy_at_upper_bound_count": 2610.0,
+        "lambda_proxy_at_lower_bound_pct": 0.05675094136632598,
+        "lambda_proxy_at_upper_bound_pct": 0.3509951586874664
+      },
+      "attenuation": {
+        "re_abs_effect_ge_0p10": 6274.0,
+        "gwam_proxy_abs_effect_ge_0p10": 5684.0,
+        "re_to_gwam_proxy_crossed_below_0p10": 590.0,
+        "re_to_gwam_proxy_crossed_below_0p10_pct_all": 0.07934373318988704,
+        "re_to_gwam_proxy_crossed_below_0p10_pct_within_re_ge": 0.09403889065986612,
+        "re_abs_effect_ge_0p20": 5243.0,
+        "gwam_proxy_abs_effect_ge_0p20": 4424.0,
+        "re_to_gwam_proxy_crossed_below_0p20": 819.0,
+        "re_to_gwam_proxy_crossed_below_0p20_pct_all": 0.11013986013986014,
+        "re_to_gwam_proxy_crossed_below_0p20_pct_within_re_ge": 0.15620827770360482
+      }
+    },
+    "delta_filtered_minus_full": {
+      "crossed_below_0p10_pct_all_filtered_minus_full": 0.00032940347246371293,
+      "crossed_below_0p20_pct_all_filtered_minus_full": 0.00045725668465725067,
+      "median_abs_shift_filtered_minus_full": -0.0003159149814830897
+    }
+  },
+  "grma_comparison": {
+    "n_grma_estimable": 4572,
+    "n_grma_positive_significant": 930,
+    "n_re_positive_significant_where_grma_estimable": 802,
+    "re_to_grma_significance_drops": 137,
+    "grma_to_re_significance_gains": 265,
+    "median_abs_shift_grma_vs_re": 0.11026555023472784,
+    "mean_abs_shift_grma_vs_re": 0.17947077143148327,
+    "median_rel_shift_grma_vs_re": 0.29962557356611186,
+    "median_w_max_grma": 0.3459324137211882,
+    "median_n_eff_grma": 3.7402773443702935,
+    "correlation_grma_re": 0.9557993769327731,
+    "by_k_band": {
+      "k_3": {
+        "n": 1409,
+        "median_abs_shift": 0.13623699761105634,
+        "mean_abs_shift": 0.2277849451371835,
+        "correlation_grma_re": 0.9287541412806248,
+        "median_w_max": 0.5371994357511286,
+        "median_n_eff": 2.2712442140130555
+      },
+      "k_4_to_9": {
+        "n": 2391,
+        "median_abs_shift": 0.10937924082731387,
+        "mean_abs_shift": 0.1685308319369936,
+        "correlation_grma_re": 0.9648213400722863,
+        "median_w_max": 0.30544357706389297,
+        "median_n_eff": 4.138729118217867
+      },
+      "k_ge_10": {
+        "n": 772,
+        "median_abs_shift": 0.08732690163999102,
+        "mean_abs_shift": 0.12517378254546405,
+        "correlation_grma_re": 0.9803787373801193,
+        "median_w_max": 0.12952507241633143,
+        "median_n_eff": 10.961590523568686
+      }
+    }
+  },
+  "gwam_grid_positive_significant_counts": {
+    "0.2": 1120,
+    "0.4": 1120,
+    "0.6": 1120,
+    "0.8": 1120
+  },
+  "outputs": {
+    "analysis_results_csv": "pairwise70_benchmark_grma\\analysis_results.csv",
+    "top_shifted_analyses_csv": "pairwise70_benchmark_grma\\top_shifted_analyses.csv",
+    "stratified_by_lambda_source_csv": "pairwise70_benchmark_grma\\stratified_by_lambda_source.csv",
+    "stratified_by_k_band_csv": "pairwise70_benchmark_grma\\stratified_by_k_band.csv",
+    "robust_sensitivity_json": "pairwise70_benchmark_grma\\robust_sensitivity_excluding_abs_mu_re_gt_4.json",
+    "clustered_by_review_csv": "pairwise70_benchmark_grma\\clustered_by_review.csv"
+  }
+}

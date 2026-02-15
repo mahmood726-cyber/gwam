@@ -1,0 +1,62 @@
+{
+  "threshold_abs_mu_re": 4.0,
+  "n_excluded": 0,
+  "excluded_pct": 0.0,
+  "full": {
+    "n_analyses": 106,
+    "distribution": {
+      "median_k": 3.0,
+      "median_lambda_proxy": 0.95,
+      "median_abs_shift_proxy": 0.044204353722335055,
+      "median_re": -0.2049424971058748,
+      "median_gwam_proxy": -0.16316617464729882,
+      "lambda_proxy_at_lower_bound_count": 0.0,
+      "lambda_proxy_at_upper_bound_count": 54.0,
+      "lambda_proxy_at_lower_bound_pct": 0.0,
+      "lambda_proxy_at_upper_bound_pct": 0.5094339622641509
+    },
+    "attenuation": {
+      "re_abs_effect_ge_0p10": 100.0,
+      "gwam_proxy_abs_effect_ge_0p10": 98.0,
+      "re_to_gwam_proxy_crossed_below_0p10": 2.0,
+      "re_to_gwam_proxy_crossed_below_0p10_pct_all": 0.018867924528301886,
+      "re_to_gwam_proxy_crossed_below_0p10_pct_within_re_ge": 0.02,
+      "re_abs_effect_ge_0p20": 91.0,
+      "gwam_proxy_abs_effect_ge_0p20": 86.0,
+      "re_to_gwam_proxy_crossed_below_0p20": 5.0,
+      "re_to_gwam_proxy_crossed_below_0p20_pct_all": 0.04716981132075472,
+      "re_to_gwam_proxy_crossed_below_0p20_pct_within_re_ge": 0.054945054945054944
+    }
+  },
+  "filtered": {
+    "n_analyses": 106,
+    "distribution": {
+      "median_k": 3.0,
+      "median_lambda_proxy": 0.95,
+      "median_abs_shift_proxy": 0.044204353722335055,
+      "median_re": -0.2049424971058748,
+      "median_gwam_proxy": -0.16316617464729882,
+      "lambda_proxy_at_lower_bound_count": 0.0,
+      "lambda_proxy_at_upper_bound_count": 54.0,
+      "lambda_proxy_at_lower_bound_pct": 0.0,
+      "lambda_proxy_at_upper_bound_pct": 0.5094339622641509
+    },
+    "attenuation": {
+      "re_abs_effect_ge_0p10": 100.0,
+      "gwam_proxy_abs_effect_ge_0p10": 98.0,
+      "re_to_gwam_proxy_crossed_below_0p10": 2.0,
+      "re_to_gwam_proxy_crossed_below_0p10_pct_all": 0.018867924528301886,
+      "re_to_gwam_proxy_crossed_below_0p10_pct_within_re_ge": 0.02,
+      "re_abs_effect_ge_0p20": 91.0,
+      "gwam_proxy_abs_effect_ge_0p20": 86.0,
+      "re_to_gwam_proxy_crossed_below_0p20": 5.0,
+      "re_to_gwam_proxy_crossed_below_0p20_pct_all": 0.04716981132075472,
+      "re_to_gwam_proxy_crossed_below_0p20_pct_within_re_ge": 0.054945054945054944
+    }
+  },
+  "delta_filtered_minus_full": {
+    "crossed_below_0p10_pct_all_filtered_minus_full": 0.0,
+    "crossed_below_0p20_pct_all_filtered_minus_full": 0.0,
+    "median_abs_shift_filtered_minus_full": 0.0
+  }
+}

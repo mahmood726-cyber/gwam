@@ -1,0 +1,62 @@
+{
+  "threshold_abs_mu_re": 4.0,
+  "n_excluded": 31,
+  "excluded_pct": 0.00415160037498326,
+  "full": {
+    "n_analyses": 7467,
+    "distribution": {
+      "median_k": 3.0,
+      "median_lambda_proxy": 0.8711540238381226,
+      "median_abs_shift_proxy": 0.054776785996273336,
+      "median_re": -0.03977217276505991,
+      "median_gwam_proxy": -0.026386941840914117,
+      "lambda_proxy_at_lower_bound_count": 422.0,
+      "lambda_proxy_at_upper_bound_count": 2633.0,
+      "lambda_proxy_at_lower_bound_pct": 0.05651533413686889,
+      "lambda_proxy_at_upper_bound_pct": 0.3526181866880943
+    },
+    "attenuation": {
+      "re_abs_effect_ge_0p10": 6305.0,
+      "gwam_proxy_abs_effect_ge_0p10": 5715.0,
+      "re_to_gwam_proxy_crossed_below_0p10": 590.0,
+      "re_to_gwam_proxy_crossed_below_0p10_pct_all": 0.07901432971742332,
+      "re_to_gwam_proxy_crossed_below_0p10_pct_within_re_ge": 0.09357652656621729,
+      "re_abs_effect_ge_0p20": 5274.0,
+      "gwam_proxy_abs_effect_ge_0p20": 4455.0,
+      "re_to_gwam_proxy_crossed_below_0p20": 819.0,
+      "re_to_gwam_proxy_crossed_below_0p20_pct_all": 0.10968260345520289,
+      "re_to_gwam_proxy_crossed_below_0p20_pct_within_re_ge": 0.1552901023890785
+    }
+  },
+  "filtered": {
+    "n_analyses": 7436,
+    "distribution": {
+      "median_k": 3.0,
+      "median_lambda_proxy": 0.8711540238381226,
+      "median_abs_shift_proxy": 0.054460871014790246,
+      "median_re": -0.04183916741687173,
+      "median_gwam_proxy": -0.026984115462823276,
+      "lambda_proxy_at_lower_bound_count": 422.0,
+      "lambda_proxy_at_upper_bound_count": 2610.0,
+      "lambda_proxy_at_lower_bound_pct": 0.05675094136632598,
+      "lambda_proxy_at_upper_bound_pct": 0.3509951586874664
+    },
+    "attenuation": {
+      "re_abs_effect_ge_0p10": 6274.0,
+      "gwam_proxy_abs_effect_ge_0p10": 5684.0,
+      "re_to_gwam_proxy_crossed_below_0p10": 590.0,
+      "re_to_gwam_proxy_crossed_below_0p10_pct_all": 0.07934373318988704,
+      "re_to_gwam_proxy_crossed_below_0p10_pct_within_re_ge": 0.09403889065986612,
+      "re_abs_effect_ge_0p20": 5243.0,
+      "gwam_proxy_abs_effect_ge_0p20": 4424.0,
+      "re_to_gwam_proxy_crossed_below_0p20": 819.0,
+      "re_to_gwam_proxy_crossed_below_0p20_pct_all": 0.11013986013986014,
+      "re_to_gwam_proxy_crossed_below_0p20_pct_within_re_ge": 0.15620827770360482
+    }
+  },
+  "delta_filtered_minus_full": {
+    "crossed_below_0p10_pct_all_filtered_minus_full": 0.00032940347246371293,
+    "crossed_below_0p20_pct_all_filtered_minus_full": 0.00045725668465725067,
+    "median_abs_shift_filtered_minus_full": -0.0003159149814830897
+  }
+}
