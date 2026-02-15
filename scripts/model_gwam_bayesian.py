@@ -119,6 +119,8 @@ def bayesian_gwam_posterior(
     """
     if w_total <= 0:
         raise ValueError("w_total must be > 0")
+    if not (0 < alpha < 1):
+        raise ValueError(f"alpha must be in (0, 1), got {alpha}")
 
     if results_only_observed is not None and w_results_only_individual.size > 0:
         if results_only_observed.size != w_results_only_individual.size:
@@ -157,15 +159,19 @@ def bayesian_gwam_posterior(
     if results_only_observed is not None and w_results_only_individual.size > 0:
         observed_mask = np.isfinite(results_only_observed)
         # Observed studies: contribute their own SE² (measurement uncertainty)
-        # If SE is unknown (NaN or not provided), treat as exact (zero variance)
+        # If SE is unknown (NaN or not provided), fall back to results_only_sigma
+        # to avoid overconfident (zero-variance) contributions.
         ro_obs_var = 0.0
         if observed_mask.any():
             w_obs = w_results_only_individual[observed_mask]
             if results_only_observed_se is not None:
                 se_obs = results_only_observed_se[observed_mask]
-                # Only add variance for finite SEs
-                finite_se = np.where(np.isfinite(se_obs), se_obs, 0.0)
+                # Use actual SE when finite, fall back to results_only_sigma otherwise
+                finite_se = np.where(np.isfinite(se_obs), se_obs, results_only_sigma)
                 ro_obs_var = float(np.sum((w_obs * finite_se) ** 2))
+            else:
+                # No SE column at all: use results_only_sigma for all observed RO
+                ro_obs_var = float(np.sum((w_obs * results_only_sigma) ** 2))
         # Unobserved: Level 1 (within-study) + Level 2 (hyperprior)
         w_unobs = w_results_only_individual[~observed_mask]
         ro_level1_var = float(np.sum(w_unobs ** 2)) * (results_only_sigma ** 2) + ro_obs_var

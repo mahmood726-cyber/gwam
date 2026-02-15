@@ -1,5 +1,7 @@
 # GWAM Real-Data Workflow
 
+**Requires Python >= 3.10** (uses `X | Y` union type syntax).
+
 This project provides a reproducible GWAM pipeline on ClinicalTrials.gov registry data:
 
 1. Pull completed trial records for selected intervention/condition pairs.
@@ -7,11 +9,20 @@ This project provides a reproducible GWAM pipeline on ClinicalTrials.gov registr
 3. Identify strict ghost protocols (no linked PMID and no posted results).
 4. Compute integrity ratios (`lambda_pmid_only`, `lambda_non_ghost`).
 5. Run GWAM correction and RE-vs-GWAM Monte Carlo simulation with optional CI calibration.
+6. Compare against standard methods (IV-FE, DL-RE, PM-RE, HK, Huber, Student-t) and GRMA (`grey_meta_v8.py`).
+
+See `LICENSE` for terms.
 
 ## Setup
 
 ```bash
 python -m pip install -r requirements.txt
+```
+
+## Running Tests
+
+```bash
+python -m pytest tests/ -v
 ```
 
 ## 1) Candidate scan
@@ -137,7 +148,7 @@ PET-PEESE, and GWAM shrinkage sensitivity:
 
 ```bash
 python scripts/build_pairwise70_ctgov_linkage_summary.py \
-  --query-csv "C:\Users\user\OneDrive - NHS\Documents\Pairwise70\analysis\transportability\ctgov_query_terms.csv" \
+  --query-csv "<PATH_TO_PAIRWISE70>\analysis\transportability\ctgov_query_terms.csv" \
   --output-csv pairwise70_benchmark_sensitivity/ctgov_linkage_summary.csv \
   --cache-dir pairwise70_benchmark_sensitivity/ctgov_linkage_raw \
   --max-pages 3 \
@@ -150,8 +161,8 @@ python scripts/build_pairwise70_ctgov_linkage_summary.py \
 
 ```bash
 python scripts/run_pairwise70_benchmark.py \
-  --pairwise-data-dir "C:\Users\user\OneDrive - NHS\Documents\Pairwise70\data" \
-  --ctgov-covariates-csv "C:\Users\user\OneDrive - NHS\Documents\Pairwise70\analysis\transportability\ctgov_target_covariates.csv" \
+  --pairwise-data-dir "<PATH_TO_PAIRWISE70>\data" \
+  --ctgov-covariates-csv "<PATH_TO_PAIRWISE70>\analysis\transportability\ctgov_target_covariates.csv" \
   --ctgov-linkage-csv pairwise70_benchmark_sensitivity/ctgov_linkage_summary.csv \
   --lambda-source-mode auto \
   --output-dir pairwise70_benchmark \

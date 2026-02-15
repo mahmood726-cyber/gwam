@@ -273,7 +273,8 @@ def pet_peese_estimate(y: np.ndarray, v: np.ndarray) -> tuple[float, float] | No
         return None
 
     # Standard PET-PEESE decision rule (Stanley & Doucouliagos 2014):
-    # two-sided 10% test (z=1.645, alpha=0.10) for the PET intercept.
+    # If the PET intercept is significant at the two-sided alpha=0.10 level
+    # (i.e., |z| > 1.645), switch to the PEESE model; otherwise keep PET.
     use_peese = abs(pet_mu / pet_se) > 1.645
     if use_peese:
         peese = weighted_linear_intercept(y=y, x=v, w=w)

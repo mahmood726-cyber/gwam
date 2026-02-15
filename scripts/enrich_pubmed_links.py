@@ -142,6 +142,7 @@ def main() -> int:
 
     meta: dict[str, dict[str, str]] = {}
     with requests.Session() as session:
+        session.headers.update({"User-Agent": "GWAM-pipeline/1.0 (enrich_pubmed_links)"})
         for pmid_batch in chunked(sorted(unique_pmids), 200):
             try:
                 meta.update(

@@ -465,7 +465,7 @@ def _dl_random_effects(yi, vi):
 
 
 def _pm_random_effects(yi, vi, max_iter=100, tol=1e-8):
-    """Iterative random-effects meta-analysis (Paule-Mandel-type iteration seeded from DL)."""
+    """Paule-Mandel random-effects meta-analysis (Q-profile estimator via Fisher scoring, seeded from DL)."""
     y = np.asarray(yi, dtype=np.float64)
     v = np.maximum(np.asarray(vi, dtype=np.float64), 1e-15)
     k = len(y)
@@ -625,42 +625,52 @@ def compare_methods(effect, variance, seed=None):
         _huber_iv: "HuberIV",
         _t_re: "tRE_df4",
     }
+    _NUM_ERRORS = (ValueError, FloatingPointError, ZeroDivisionError,
+                   np.linalg.LinAlgError, OverflowError)
     for fn in [_iv_fixed_effect, _dl_random_effects, _pm_random_effects,
                _hk_reml, _huber_iv, _t_re]:
         try:
             r = fn(y, v)
             results.append(r)
-        except Exception as e:
+        except _NUM_ERRORS as e:
             results.append({"method": _method_names.get(fn, fn.__name__),
                             "estimate": np.nan, "se": np.nan,
                             "ci_lo": np.nan, "ci_hi": np.nan,
                             "error": str(e)})
 
     # GRMA with guard
-    g = GRMA(effect_guard=True)
-    ci = g.bootstrap_ci(y, v, B=999, bca=True, seed=seed)
-    results.append({
-        "method": "GRMA",
-        "estimate": ci["estimate"],
-        "se": ci["se"],
-        "ci_lo": ci["ci_lo_pct"],
-        "ci_hi": ci["ci_hi_pct"],
-        "ci_lo_bca": ci.get("ci_lo_bca", np.nan),
-        "ci_hi_bca": ci.get("ci_hi_bca", np.nan),
-    })
+    try:
+        g = GRMA(effect_guard=True)
+        ci = g.bootstrap_ci(y, v, B=999, bca=True, seed=seed)
+        results.append({
+            "method": "GRMA",
+            "estimate": ci["estimate"],
+            "se": ci["se"],
+            "ci_lo": ci["ci_lo_pct"],
+            "ci_hi": ci["ci_hi_pct"],
+            "ci_lo_bca": ci.get("ci_lo_bca", np.nan),
+            "ci_hi_bca": ci.get("ci_hi_bca", np.nan),
+        })
+    except _NUM_ERRORS as e:
+        results.append({"method": "GRMA", "estimate": np.nan, "se": np.nan,
+                        "ci_lo": np.nan, "ci_hi": np.nan, "error": str(e)})
 
     # GRMA without guard
-    g_ng = GRMA(effect_guard=False)
-    ci_ng = g_ng.bootstrap_ci(y, v, B=999, bca=True, seed=seed)
-    results.append({
-        "method": "GRMA_noguard",
-        "estimate": ci_ng["estimate"],
-        "se": ci_ng["se"],
-        "ci_lo": ci_ng["ci_lo_pct"],
-        "ci_hi": ci_ng["ci_hi_pct"],
-        "ci_lo_bca": ci_ng.get("ci_lo_bca", np.nan),
-        "ci_hi_bca": ci_ng.get("ci_hi_bca", np.nan),
-    })
+    try:
+        g_ng = GRMA(effect_guard=False)
+        ci_ng = g_ng.bootstrap_ci(y, v, B=999, bca=True, seed=seed)
+        results.append({
+            "method": "GRMA_noguard",
+            "estimate": ci_ng["estimate"],
+            "se": ci_ng["se"],
+            "ci_lo": ci_ng["ci_lo_pct"],
+            "ci_hi": ci_ng["ci_hi_pct"],
+            "ci_lo_bca": ci_ng.get("ci_lo_bca", np.nan),
+            "ci_hi_bca": ci_ng.get("ci_hi_bca", np.nan),
+        })
+    except _NUM_ERRORS as e:
+        results.append({"method": "GRMA_noguard", "estimate": np.nan, "se": np.nan,
+                        "ci_lo": np.nan, "ci_hi": np.nan, "error": str(e)})
 
     return results
 

@@ -325,6 +325,7 @@ def main() -> int:
     run_date = dt.date.today().isoformat()
     rows: list[CandidateStats] = []
     with requests.Session() as session:
+        session.headers.update({"User-Agent": "GWAM-pipeline/1.0 (run_candidate_scan)"})
         for intervention, condition in candidates:
             rows.append(
                 fetch_candidate_stats(

@@ -38,8 +38,9 @@ def safe_float(value: Any) -> float:
 
 
 def normal_cdf(x: float) -> float:
-    """Standard normal CDF (scalar)."""
-    return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
+    """Standard normal CDF (scalar, via scipy.stats.norm.cdf)."""
+    from scipy.stats import norm
+    return float(norm.cdf(x))
 
 
 _CSV_FORMULA_CHARS = frozenset("=+@\t\r")
@@ -439,10 +440,17 @@ def build_environment_metadata() -> dict[str, str]:
         "timestamp_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
     }
     try:
+        # Try package-relative import first (when used as package)
         from . import __version__ as _gwam_ver
         meta["gwam_version"] = _gwam_ver
-    except Exception:
-        meta["gwam_version"] = "unknown"
+    except (ImportError, SystemError):
+        try:
+            # Fallback for standalone script execution
+            import importlib
+            _init = importlib.import_module("__init__")
+            meta["gwam_version"] = _init.__version__
+        except (ImportError, AttributeError):
+            meta["gwam_version"] = "unknown"
     try:
         meta["pandas_version"] = __import__("pandas").__version__
     except ImportError:
