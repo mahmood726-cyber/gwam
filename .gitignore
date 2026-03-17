@@ -7,9 +7,10 @@ __pycache__/
 dist/
 build/
 
-# IDE
+# IDE / tools
 .vscode/
 .idea/
+.serena/
 *.swp
 
 # OS

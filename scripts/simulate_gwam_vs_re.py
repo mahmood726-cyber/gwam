@@ -135,6 +135,12 @@ def parse_args() -> argparse.Namespace:
         help="SD used when --results-only-mode=as_unknown.",
     )
     parser.add_argument(
+        "--ghost-sigma",
+        type=float,
+        default=0.10,
+        help="Assumed SD of ghost effects for GWAM SE computation (0 disables ghost variance).",
+    )
+    parser.add_argument(
         "--lambda-target",
         choices=["pmid_only", "non_ghost"],
         default="non_ghost",
@@ -205,6 +211,9 @@ def random_effects_dl(
             return None
         if np.any(mult <= 0):
             return None
+
+    if np.any(v <= 0):
+        return None
 
     w = mult / v
     w_sum = np.sum(w)
@@ -297,6 +306,7 @@ def simulate_one_meta(
     control_event_sd_logit: float,
     allocation_min_frac_treat: float,
     allocation_max_frac_treat: float,
+    ghost_sigma: float = 0.10,
     results_only_mode: str,
     results_only_mu: float,
     results_only_sd: float,
@@ -393,7 +403,10 @@ def simulate_one_meta(
     if results_only_mode == "as_observed":
         gwam_scale = lambda_non_ghost
         mu_gwam = gwam_scale * mu_re
-        se_gwam = gwam_scale * se_re
+        # Ghost SE: per-study squared weights (consistent with Bayesian code)
+        ghost_w_ind = weights_selection[~is_published]
+        ghost_se_sq = float(np.sum((ghost_w_ind / all_weight_sum) ** 2) * (ghost_sigma ** 2))
+        se_gwam = math.sqrt((gwam_scale * se_re) ** 2 + ghost_se_sq)
     else:
         mu_results_component = 0.0
         se_results_component_sq = 0.0
@@ -407,8 +420,14 @@ def simulate_one_meta(
             else:
                 mu_results_component = float(np.sum(results_only_weights) * results_only_mu / all_weight_sum)
 
+        # Ghost SE: use per-study squared weights (consistent with Bayesian code)
+        ghost_weights_individual = weights_selection[~is_published]
+        se_ghost_component_sq = float(
+            np.sum((ghost_weights_individual / all_weight_sum) ** 2) * (ghost_sigma ** 2)
+        )
+
         mu_gwam = (lambda_pmid_only * mu_re) + mu_results_component
-        se_gwam = math.sqrt((lambda_pmid_only * se_re) ** 2 + se_results_component_sq)
+        se_gwam = math.sqrt((lambda_pmid_only * se_re) ** 2 + se_results_component_sq + se_ghost_component_sq)
 
     # --- Bayesian GWAM (5th comparator) ---
     # Compute analytical posterior with default priors
@@ -421,8 +440,8 @@ def simulate_one_meta(
         w_ghost_individual=weights_selection[~is_published],
         w_total=all_weight_sum,
         prior=bayesian_prior,
-        ghost_sigma=0.1,  # mid-grid default
-        results_only_sigma=0.1,
+        ghost_sigma=ghost_sigma,
+        results_only_sigma=ghost_sigma,
     )
     mu_bayesian_gwam = bayesian_result.posterior_mean
     se_bayesian_gwam = bayesian_result.posterior_sd
@@ -595,6 +614,7 @@ def estimate_lambda_from_publication(
     control_event_sd_logit: float,
     allocation_min_frac_treat: float,
     allocation_max_frac_treat: float,
+    ghost_sigma: float,
     results_only_mode: str,
     results_only_mu: float,
     results_only_sd: float,
@@ -616,6 +636,7 @@ def estimate_lambda_from_publication(
             control_event_sd_logit=control_event_sd_logit,
             allocation_min_frac_treat=allocation_min_frac_treat,
             allocation_max_frac_treat=allocation_max_frac_treat,
+            ghost_sigma=ghost_sigma,
             results_only_mode=results_only_mode,
             results_only_mu=results_only_mu,
             results_only_sd=results_only_sd,
@@ -644,6 +665,7 @@ def calibrate_p_nonsig(
     control_event_sd_logit: float,
     allocation_min_frac_treat: float,
     allocation_max_frac_treat: float,
+    ghost_sigma: float,
     target_lambda: float,
     results_only_mode: str,
     results_only_mu: float,
@@ -677,6 +699,7 @@ def calibrate_p_nonsig(
                 control_event_sd_logit=control_event_sd_logit,
                 allocation_min_frac_treat=allocation_min_frac_treat,
                 allocation_max_frac_treat=allocation_max_frac_treat,
+                ghost_sigma=ghost_sigma,
                 results_only_mode=results_only_mode,
                 results_only_mu=results_only_mu,
                 results_only_sd=results_only_sd,
@@ -756,6 +779,12 @@ def main() -> int:
         raise ValueError("--ci-calibration-runs must be >= 100.")
     if args.control_event_sd_logit < 0:
         raise ValueError("--control-event-sd-logit must be >= 0.")
+    if args.tau2 < 0:
+        raise ValueError("--tau2 must be >= 0.")
+    if args.ghost_sigma < 0:
+        raise ValueError("--ghost-sigma must be >= 0.")
+    if args.results_only_sd < 0:
+        raise ValueError("--results-only-sd must be >= 0.")
     if not (0 < args.allocation_min_frac_treat < 1):
         raise ValueError("--allocation-min-frac-treat must be in (0,1).")
     if not (0 < args.allocation_max_frac_treat < 1):
@@ -811,6 +840,7 @@ def main() -> int:
             control_event_sd_logit=args.control_event_sd_logit,
             allocation_min_frac_treat=args.allocation_min_frac_treat,
             allocation_max_frac_treat=args.allocation_max_frac_treat,
+            ghost_sigma=args.ghost_sigma,
             target_lambda=calibration_target_effective,
             results_only_mode=args.results_only_mode,
             results_only_mu=args.results_only_mu,
@@ -846,6 +876,7 @@ def main() -> int:
                 control_event_sd_logit=args.control_event_sd_logit,
                 allocation_min_frac_treat=args.allocation_min_frac_treat,
                 allocation_max_frac_treat=args.allocation_max_frac_treat,
+                ghost_sigma=args.ghost_sigma,
                 results_only_mode=args.results_only_mode,
                 results_only_mu=args.results_only_mu,
                 results_only_sd=args.results_only_sd,
@@ -940,6 +971,7 @@ def main() -> int:
                 control_event_sd_logit=args.control_event_sd_logit,
                 allocation_min_frac_treat=args.allocation_min_frac_treat,
                 allocation_max_frac_treat=args.allocation_max_frac_treat,
+                ghost_sigma=args.ghost_sigma,
                 results_only_mode=args.results_only_mode,
                 results_only_mu=args.results_only_mu,
                 results_only_sd=args.results_only_sd,

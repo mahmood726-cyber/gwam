@@ -10,12 +10,15 @@ Usage:
 import json
 import numpy as np
 import pandas as pd
+from scipy.stats import norm as _norm
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.patches import FancyBboxPatch
 from pathlib import Path
+
+z_crit = _norm.ppf(0.975)  # two-sided 95% CI critical value
 
 # ── Paths ──────────────────────────────────────────────────────────────────
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -46,7 +49,7 @@ COLORS = {
     'ghost': '#ef8a62',
     're': '#d73027',
     'gwam': '#4575b4',
-    'bayesian': '#91bfdb',
+    'hvp': '#91bfdb',
     'oracle': '#fc8d59',
     'pet_peese': '#fee090',
     'base': '#4575b4',
@@ -87,7 +90,7 @@ def fig1_pipeline():
         (1.0, 3.0, "Integrity Ratio\n(\u03bb = W_obs / W_total)", '#decbe4'),
         (4.0, 3.0, "GWAM Estimate\n(Weighted average)", '#fed9a6'),
         (7.5, 3.0, "Simulation CI\n(Calibrated)", '#fddaec'),
-        (4.0, 0.8, "Bayesian Extension\n(Prior on ghost effects)", '#f2f0f7'),
+        (4.0, 0.8, "HVP Extension\n(Variance propagation)", '#f2f0f7'),
     ]
 
     for x, y, text, color in boxes:
@@ -164,13 +167,13 @@ def fig3_forest():
 
     items = [
         ("Escitalopram/Depression", "Published RE",
-         esc_mu_re, esc_mu_re - 1.96 * esc_se, esc_mu_re + 1.96 * esc_se),
+         esc_mu_re, esc_mu_re - z_crit * esc_se, esc_mu_re + z_crit * esc_se),
         ("Escitalopram/Depression", "GWAM",
          esc['estimates']['mu_gwam_sim_mean'],
          esc['estimates']['mu_gwam_sim_q025'],
          esc['estimates']['mu_gwam_sim_q975']),
         ("Pregabalin/Neuropathic Pain", "Published RE",
-         preg_mu_re, preg_mu_re - 1.96 * preg_se, preg_mu_re + 1.96 * preg_se),
+         preg_mu_re, preg_mu_re - z_crit * preg_se, preg_mu_re + z_crit * preg_se),
         ("Pregabalin/Neuropathic Pain", "GWAM",
          preg['estimates']['mu_gwam_sim_mean'],
          preg['estimates']['mu_gwam_sim_q025'],
@@ -206,9 +209,9 @@ def fig3_forest():
     save_fig(fig, 'fig3_forest')
 
 
-# ── Fig 4: Bayesian Sensitivity Heatmap ───────────────────────────────────
-def fig4_bayesian_heatmap():
-    """Bayesian sensitivity heatmap for escitalopram: Pr(positive)."""
+# ── Fig 4: HVP Sensitivity Heatmap ────────────────────────────────────────
+def fig4_hvp_heatmap():
+    """HVP sensitivity heatmap for escitalopram: Pr(positive)."""
     bayes = json.loads((ANALYSIS / "escitalopram_depression_gwam_bayesian.json").read_text())
 
     grid_sigmas = [0.05, 0.1, 0.2, 0.3]
@@ -257,10 +260,10 @@ def fig4_bayesian_heatmap():
                      fontsize=8)
     fig.colorbar(im2, ax=ax2, shrink=0.8)
 
-    fig.suptitle("Fig 4. Bayesian Sensitivity Analysis (Escitalopram/Depression)",
+    fig.suptitle("Fig 4. HVP Sensitivity Analysis (Escitalopram/Depression)",
                  fontweight='bold', y=1.02)
     fig.tight_layout()
-    save_fig(fig, 'fig4_bayesian_sensitivity')
+    save_fig(fig, 'fig4_hvp_sensitivity')
 
 
 # ── Fig 5: Simulation Bias + RMSE Panel ───────────────────────────────────
@@ -270,8 +273,8 @@ def fig5_simulation_bias_rmse():
 
     methods = ['random_effects', 'gwam_null', 'bayesian_gwam',
                'oracle_ipw_random_effects', 'pet_peese']
-    method_labels = ['RE', 'GWAM', 'Bayesian\nGWAM', 'Oracle\nIPW', 'PET-\nPEESE']
-    method_colors = [COLORS['re'], COLORS['gwam'], COLORS['bayesian'],
+    method_labels = ['RE', 'GWAM', 'HVP\nGWAM', 'Oracle\nIPW', 'PET-\nPEESE']
+    method_colors = [COLORS['re'], COLORS['gwam'], COLORS['hvp'],
                      COLORS['oracle'], COLORS['pet_peese']]
     mu_trues = [0.0, 0.1, 0.2]
 
@@ -323,8 +326,8 @@ def fig6_simulation_coverage():
 
     methods = ['random_effects', 'gwam_null', 'bayesian_gwam',
                'oracle_ipw_random_effects', 'pet_peese']
-    method_labels = ['RE', 'GWAM', 'Bayesian GWAM', 'Oracle IPW', 'PET-PEESE']
-    method_colors = [COLORS['re'], COLORS['gwam'], COLORS['bayesian'],
+    method_labels = ['RE', 'GWAM', 'HVP-GWAM', 'Oracle IPW', 'PET-PEESE']
+    method_colors = [COLORS['re'], COLORS['gwam'], COLORS['hvp'],
                      COLORS['oracle'], COLORS['pet_peese']]
     mu_trues = [0.0, 0.1, 0.2]
 
@@ -470,7 +473,7 @@ def main():
     fig1_pipeline()
     fig2_candidate_scan()
     fig3_forest()
-    fig4_bayesian_heatmap()
+    fig4_hvp_heatmap()
     fig5_simulation_bias_rmse()
     fig6_simulation_coverage()
     fig7_attenuation_distribution()

@@ -20,8 +20,8 @@ MULTIPLIER_KEY_MAP = {
 }
 
 
-def s1_bayesian_sensitivity():
-    """S1: Bayesian sensitivity grid for both applications."""
+def s1_hvp_sensitivity():
+    """S1: HVP sensitivity grid for both applications."""
     rows = []
     for app_name, fname in [
         ("Escitalopram/Depression", "escitalopram_depression_gwam_bayesian.json"),
@@ -41,7 +41,7 @@ def s1_bayesian_sensitivity():
                 'pr_positive': round(entry['pr_positive'], 6),
             })
 
-    outpath = OUTDIR / "S1_bayesian_sensitivity.csv"
+    outpath = OUTDIR / "S1_hvp_sensitivity.csv"
     with open(outpath, 'w', newline='') as f:
         w = csv.DictWriter(f, fieldnames=rows[0].keys())
         w.writeheader()
@@ -71,10 +71,12 @@ def s2_simulation_results():
                     continue
                 multiplier_key = MULTIPLIER_KEY_MAP.get(method, f'multiplier_{method}')
                 multiplier_val = ci_calib.get(multiplier_key)
+                # Map internal key to user-facing label
+                method_label = 'hvp_gwam' if method == 'bayesian_gwam' else method
                 rows.append({
                     'application': app_name,
                     'mu_true': mu_true,
-                    'method': method,
+                    'method': method_label,
                     'n_valid': int(d.get('n_valid', 0)),
                     'mean_estimate': round(d.get('mean_estimate', 0), 6),
                     'bias': round(d.get('bias', 0), 6),
@@ -144,7 +146,7 @@ def s3_pairwise70_stratified():
 
 if __name__ == "__main__":
     print("Generating supplementary tables...")
-    s1_bayesian_sensitivity()
+    s1_hvp_sensitivity()
     s2_simulation_results()
     s3_pairwise70_stratified()
     print("Done.")

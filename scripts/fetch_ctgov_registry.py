@@ -19,6 +19,7 @@ from gwam_utils import (
     extract_pmids,
     intervention_matches,
     parse_bool,
+    request_json_with_retry,
     sanitize_csv_cell,
     sanitize_path_component,
     trial_passes_design_filters,
@@ -176,31 +177,6 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     return parser.parse_args()
-
-
-def request_json_with_retry(
-    session: requests.Session,
-    *,
-    url: str,
-    params: dict[str, str | int],
-    timeout: int,
-    attempts: int = 5,
-) -> dict:
-    last_error: Exception | None = None
-    for attempt in range(1, attempts + 1):
-        try:
-            response = session.get(url, params=params, timeout=timeout)
-            response.raise_for_status()
-            return response.json()
-        except requests.RequestException as exc:
-            last_error = exc
-            if attempt == attempts:
-                break
-            sleep_s = min(12.0, 1.5 * (2 ** (attempt - 1)))
-            time.sleep(sleep_s)
-    if last_error is None:
-        raise RuntimeError("request_json_with_retry: no attempts made")
-    raise last_error
 
 
 def main() -> int:

@@ -9,7 +9,7 @@ from __future__ import annotations
 import argparse
 import csv
 import time
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from pathlib import Path
 
 import requests
@@ -33,7 +33,11 @@ def parse_args() -> argparse.Namespace:
         default="",
         help="Contact email for NCBI API request etiquette.",
     )
-    parser.add_argument("--api-key", default="", help="Optional NCBI API key.")
+    parser.add_argument(
+        "--api-key",
+        default=__import__("os").environ.get("NCBI_API_KEY", ""),
+        help="Optional NCBI API key (or set NCBI_API_KEY env var).",
+    )
     parser.add_argument(
         "--pmid-column",
         default="pmids_results",
@@ -90,8 +94,7 @@ def fetch_pubmed_metadata(
     xml_text = get_text_with_retry(session, url=EFETCH_URL, params=params, timeout=60)
     if len(xml_text) > 50_000_000:  # 50 MB safety cap
         raise ValueError(f"PubMed XML response too large ({len(xml_text)} bytes); refusing to parse.")
-    parser = ET.XMLParser(encoding="utf-8")
-    root = ET.fromstring(xml_text.encode("utf-8"), parser=parser)
+    root = ET.fromstring(xml_text.encode("utf-8"))
 
     out: dict[str, dict[str, str]] = {}
     for article in root.findall(".//PubmedArticle"):

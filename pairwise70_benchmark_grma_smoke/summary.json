@@ -1,6 +1,6 @@
 {
-  "pairwise_data_dir": "C:\\Users\\user\\OneDrive - NHS\\Documents\\Pairwise70\\data",
-  "ctgov_covariates_csv": "C:\\Users\\user\\OneDrive - NHS\\Documents\\Pairwise70\\analysis\\transportability\\ctgov_target_covariates.csv",
+  "pairwise_data_dir": "<PAIRWISE70_DATA>/data",
+  "ctgov_covariates_csv": "<PAIRWISE70_DATA>/ctgov_target_covariates.csv",
   "ctgov_linkage_csv": "pairwise70_benchmark_sensitivity\\ctgov_linkage_summary.csv",
   "n_files_scanned": 5,
   "n_files_with_valid_binary_analyses": 5,

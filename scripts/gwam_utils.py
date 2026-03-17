@@ -6,6 +6,7 @@ from __future__ import annotations
 import math
 import re
 import sys
+import time
 from typing import Any, Iterable
 
 if sys.version_info < (3, 10):
@@ -464,3 +465,29 @@ def build_environment_metadata() -> dict[str, str]:
     except ImportError:
         pass
     return meta
+
+
+def request_json_with_retry(
+    session: Any,
+    *,
+    url: str,
+    params: dict[str, str | int],
+    timeout: int,
+    attempts: int = 5,
+) -> dict:
+    """GET a JSON endpoint with exponential-backoff retry."""
+    last_error: Exception | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            response = session.get(url, params=params, timeout=timeout)
+            response.raise_for_status()
+            return response.json()
+        except Exception as exc:
+            last_error = exc
+            if attempt == attempts:
+                break
+            sleep_s = min(12.0, 1.5 * (2 ** (attempt - 1)))
+            time.sleep(sleep_s)
+    if last_error is None:
+        raise RuntimeError("request_json_with_retry: no attempts made")
+    raise last_error

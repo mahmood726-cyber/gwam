@@ -1,5 +1,5 @@
 {
-  "registry_csv": "C:\\Users\\user\\Downloads\\GWAM\\data\\raw\\escitalopram__depression_with_results.csv",
+  "registry_csv": "data/raw/escitalopram__depression_with_results.csv",
   "n_trials_total": 18,
   "n_trials_with_pmid": 4,
   "n_trials_results_only": 9,

@@ -23,7 +23,7 @@ import json
 import math
 import re
 import time
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from pathlib import Path
 from typing import Any
 
@@ -129,8 +129,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--pubmed-api-key",
-        default="",
-        help="NCBI API key (optional; increases rate limit from 3/s to 10/s).",
+        default=__import__("os").environ.get("NCBI_API_KEY", ""),
+        help="NCBI API key (or set NCBI_API_KEY env var; increases rate limit from 3/s to 10/s).",
     )
     parser.add_argument(
         "--fuzzy-enrollment-tolerance",
@@ -255,10 +255,8 @@ def pubmed_to_nct(
             if len(resp.text) > 50_000_000:
                 print(f"  PubMed bridge: skipping oversized response ({len(resp.text)} bytes)")
                 continue
-            # Use XMLParser with explicit encoding; Python's expat parser does not
-            # resolve external entities, but we size-limit as defense-in-depth.
-            parser = ET.XMLParser(encoding="utf-8")
-            root = ET.fromstring(resp.text.encode("utf-8"), parser=parser)
+            # defusedxml.fromstring handles entity expansion protection.
+            root = ET.fromstring(resp.text.encode("utf-8"))
         except Exception as exc:
             print(f"  PubMed bridge: batch starting {batch[0]} failed: {type(exc).__name__}")
             continue

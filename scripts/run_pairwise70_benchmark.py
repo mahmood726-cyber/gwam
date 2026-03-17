@@ -170,6 +170,12 @@ def parse_args() -> argparse.Namespace:
         help="Seed for review-level cluster bootstrap.",
     )
     parser.add_argument(
+        "--ghost-sigma",
+        type=float,
+        default=0.10,
+        help="Assumed SD for ghost (unpublished) study effects, used in GWAM SE formula.",
+    )
+    parser.add_argument(
         "--max-files",
         type=int,
         default=None,
@@ -1046,8 +1052,8 @@ def main() -> int:
                     w_ghost_individual=w_ghost_arr,
                     w_total=w_total_bayesian,
                     prior=bayesian_prior,
-                    ghost_sigma=0.1,
-                    results_only_sigma=0.1,
+                    ghost_sigma=args.ghost_sigma,
+                    results_only_sigma=args.ghost_sigma,
                 )
                 mu_bayesian_gwam = bayesian_result.posterior_mean
                 se_bayesian_gwam = bayesian_result.posterior_sd
@@ -1061,9 +1067,11 @@ def main() -> int:
                 ci_bayesian_gwam_hi = mu_bayesian_gwam + z_crit * se_bayesian_gwam
 
             mu_gwam_proxy = float(lambda_proxy * mu_re)
-            se_gwam_proxy = float(lambda_proxy * se_re)
+            ghost_frac_proxy = 1.0 - lambda_proxy
+            se_gwam_proxy = float(math.sqrt((lambda_proxy * se_re) ** 2 + (ghost_frac_proxy * args.ghost_sigma) ** 2))
             mu_gwam_proxy_unclipped = float(lambda_proxy_unclipped * mu_re)
-            se_gwam_proxy_unclipped = float(lambda_proxy_unclipped * se_re)
+            ghost_frac_proxy_unclipped = 1.0 - lambda_proxy_unclipped
+            se_gwam_proxy_unclipped = float(math.sqrt((lambda_proxy_unclipped * se_re) ** 2 + (ghost_frac_proxy_unclipped * args.ghost_sigma) ** 2))
             abs_mu_re = abs(float(mu_re))
             if abs_mu_re >= 0.10:
                 if args.lambda_uncertainty_model == "beta":
@@ -1189,7 +1197,8 @@ def main() -> int:
             for lam in lambda_grid:
                 suffix = lambda_column_suffix(lam)
                 row[f"mu_gwam_lambda_{suffix}"] = float(lam * mu_re)
-                row[f"se_gwam_lambda_{suffix}"] = float(lam * se_re)
+                ghost_frac_lam = 1.0 - lam
+                row[f"se_gwam_lambda_{suffix}"] = float(math.sqrt((lam * se_re) ** 2 + (ghost_frac_lam * args.ghost_sigma) ** 2))
 
             z_ci = normal_quantile(0.975)
             row["re_ci_lo"] = float(mu_re - (z_ci * se_re))

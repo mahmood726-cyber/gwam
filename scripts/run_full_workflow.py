@@ -219,12 +219,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--mu-true-list", default="0.0,0.1,0.2")
 
-    # --- Published SE (for Bayesian model) ---
+    # --- Published SE (for HVP model) ---
     parser.add_argument(
         "--published-se",
         type=float,
         default=None,
-        help="SE of the published pooled effect. Required for Bayesian model unless CI bounds are provided.",
+        help="SE of the published pooled effect. Required for HVP model unless CI bounds are provided.",
     )
     parser.add_argument(
         "--published-ci-lower",
@@ -257,11 +257,11 @@ def parse_args() -> argparse.Namespace:
         help="Comma-separated outcome keywords for CT.gov results extraction.",
     )
 
-    # --- Bayesian model args ---
+    # --- HVP model args ---
     parser.add_argument(
         "--skip-bayesian",
         action="store_true",
-        help="Skip the Bayesian hierarchical GWAM model step.",
+        help="Skip the HVP (hierarchical variance-propagation) GWAM model step.",
     )
     parser.add_argument(
         "--prior-ghost-mu-mean",
@@ -278,7 +278,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--prior-ghost-sigma-grid",
         default="0.05,0.1,0.2,0.3",
-        help="Comma-separated within-ghost heterogeneity values for Bayesian sensitivity grid.",
+        help="Comma-separated within-ghost heterogeneity values for HVP sensitivity grid.",
     )
     parser.add_argument(
         "--prior-ro-mu-mean",
@@ -295,7 +295,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--prior-ro-sigma-grid",
         default="0.05,0.1,0.2,0.3",
-        help="Comma-separated within-results-only heterogeneity values for Bayesian sensitivity grid.",
+        help="Comma-separated within-results-only heterogeneity values for HVP sensitivity grid.",
     )
 
     return parser.parse_args()
@@ -394,8 +394,8 @@ def main() -> int:
 
     if not args.skip_bayesian and published_se is None:
         raise ValueError(
-            "Bayesian model requires --published-se or (--published-ci-lower + --published-ci-upper). "
-            "Use --skip-bayesian to skip the Bayesian step."
+            "HVP model requires --published-se or (--published-ci-lower + --published-ci-upper). "
+            "Use --skip-bayesian to skip the HVP step."
         )
     if published_se is not None and published_se <= 0:
         raise ValueError("--published-se must be > 0.")
@@ -605,7 +605,7 @@ def main() -> int:
         ]
     )
 
-    # --- Bayesian hierarchical GWAM ---
+    # --- HVP (hierarchical variance-propagation) GWAM ---
     if not args.skip_bayesian:
         bayesian_cmd = [
             sys.executable,
@@ -635,7 +635,7 @@ def main() -> int:
             bayesian_cmd.append("--use-observed-results")
         run(bayesian_cmd)
     else:
-        print("Skipping Bayesian GWAM model by request.")
+        print("Skipping HVP-GWAM model by request.")
 
     run(
         [
@@ -709,7 +709,7 @@ def main() -> int:
         print(f"- Registry (with results): {registry_csv_enriched}")
     print(f"- GWAM summary: {gwam_json}")
     if not args.skip_bayesian:
-        print(f"- Bayesian GWAM: {bayesian_json}")
+        print(f"- HVP-GWAM: {bayesian_json}")
     print(f"- Simulation summary: {sim_json}")
     return 0
 

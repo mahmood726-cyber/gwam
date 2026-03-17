@@ -1,4 +1,8 @@
-# GWAM Real-Data Workflow
+# GWAM: Ghost-Weighted Aggregate Meta-analysis
+
+## Installation
+Use the dependency files in this directory (for example `requirements.txt`, `environment.yml`, `DESCRIPTION`, or equivalent project-specific files) to create a clean local environment before running analyses.
+Document any package-version mismatch encountered during first run.
 
 **Requires Python >= 3.10** (uses `X | Y` union type syntax).
 
@@ -9,7 +13,7 @@ This project provides a reproducible GWAM pipeline on ClinicalTrials.gov registr
 3. Identify strict ghost protocols (no linked PMID and no posted results).
 4. Compute integrity ratios (`lambda_pmid_only`, `lambda_non_ghost`).
 5. Run GWAM correction and RE-vs-GWAM Monte Carlo simulation with optional CI calibration.
-6. Compare against standard methods (IV-FE, DL-RE, PM-RE, HK, Huber, Student-t) and GRMA (`grey_meta_v8.py`).
+6. Compare against standard methods (RE, Oracle IPW, PET-PEESE) and optional HVP extension.
 
 See `LICENSE` for terms.
 
@@ -231,7 +235,7 @@ python scripts/compare_pairwise70_sensitivity.py \
 Methods-grade uncertainty and clustering mode:
 
 ```bash
-# Bayesian lambda uncertainty + review-cluster bootstrap
+# Beta-posterior lambda uncertainty + review-cluster bootstrap
 python scripts/run_pairwise70_benchmark.py \
   --output-dir pairwise70_benchmark_sensitivity/methods_base \
   --ctgov-linkage-csv pairwise70_benchmark_sensitivity/ctgov_linkage_summary.csv \

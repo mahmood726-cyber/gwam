@@ -1,5 +1,5 @@
 {
-  "registry_csv": "C:\\Users\\user\\Downloads\\GWAM\\data\\raw\\pregabalin__neuropathic_pain_with_results.csv",
+  "registry_csv": "data/raw/pregabalin__neuropathic_pain_with_results.csv",
   "n_trials_selection_pool": 10,
   "n_trials_results_only_pool": 25,
   "lambda_target": "non_ghost",

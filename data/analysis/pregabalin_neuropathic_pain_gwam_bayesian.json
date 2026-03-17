@@ -1,5 +1,5 @@
 {
-  "registry_csv": "C:\\Users\\user\\Downloads\\GWAM\\data\\raw\\pregabalin__neuropathic_pain_with_results.csv",
+  "registry_csv": "data/raw/pregabalin__neuropathic_pain_with_results.csv",
   "n_trials_total": 35,
   "n_trials_with_pmid": 1,
   "n_trials_results_only": 25,

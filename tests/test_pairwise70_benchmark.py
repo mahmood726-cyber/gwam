@@ -60,6 +60,12 @@ class TestPairwise70BenchmarkHelpers(unittest.TestCase):
             1.2,
             places=6,
         )
+        # lambda=1.0 (no ghost trials): should clamp to upper bound
+        self.assertAlmostEqual(
+            apply_lambda_bounds(1.0, lower=0.2, upper=0.95, clipping_enabled=True),
+            0.95,
+            places=6,
+        )
 
     def test_build_lambda_posterior_params_count_beta(self) -> None:
         out = build_lambda_posterior_params(

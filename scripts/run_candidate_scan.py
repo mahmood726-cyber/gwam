@@ -22,6 +22,7 @@ from gwam_utils import (
     classify_publication_status,
     extract_pmids,
     intervention_matches,
+    request_json_with_retry,
     sanitize_csv_cell,
     trial_passes_design_filters,
 )
@@ -59,31 +60,6 @@ class CandidateStats:
     ghost_protocols: int
     ghost_ratio: float
     with_results: int
-
-
-def request_json_with_retry(
-    session: requests.Session,
-    *,
-    url: str,
-    params: dict[str, str | int],
-    timeout: int,
-    attempts: int = 5,
-) -> dict:
-    last_error: Exception | None = None
-    for attempt in range(1, attempts + 1):
-        try:
-            response = session.get(url, params=params, timeout=timeout)
-            response.raise_for_status()
-            return response.json()
-        except requests.RequestException as exc:
-            last_error = exc
-            if attempt == attempts:
-                break
-            sleep_s = min(12.0, 1.5 * (2 ** (attempt - 1)))
-            time.sleep(sleep_s)
-    if last_error is None:
-        raise RuntimeError("request_json_with_retry: no attempts made")
-    raise last_error
 
 
 def fetch_candidate_stats(
