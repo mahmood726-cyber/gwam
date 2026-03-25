@@ -1,0 +1,5 @@
+nct_id,condition,intervention,enrollment,has_pmid,has_results,is_ghost_protocol,pmids_results
+NCT00000001,depression,escitalopram,320,TRUE,TRUE,FALSE,18434567
+NCT00000002,depression,escitalopram,180,FALSE,TRUE,FALSE,
+NCT00000003,depression,escitalopram,140,FALSE,FALSE,TRUE,
+NCT00000004,depression,escitalopram,260,TRUE,TRUE,FALSE,19654321

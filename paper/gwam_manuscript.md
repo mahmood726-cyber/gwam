@@ -2,7 +2,7 @@
 
 **Running title:** GWAM: Registry-Based Publication Bias Sensitivity
 
-**Authors:** Mahmood Saffari^1^ [Corresponding author]
+**Authors:** Mahmood Ahmad^1^ [Corresponding author]
 
 **Affiliation:** ^1^ Independent Researcher, London, United Kingdom
 
@@ -399,7 +399,7 @@ GWAM is not intended to replace the published estimate but to provide context ab
 
 ## Author Contributions (CRediT)
 
-**Mahmood Saffari:** Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Data Curation, Writing -- Original Draft, Writing -- Review & Editing, Visualization. This single-author paper meets all four ICMJE authorship criteria.
+**Mahmood Ahmad:** Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Data Curation, Writing -- Original Draft, Writing -- Review & Editing, Visualization. This single-author paper meets all four ICMJE authorship criteria.
 
 ## Competing Interests
 

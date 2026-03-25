@@ -1,0 +1,36 @@
+{
+  "title": "GWAM",
+  "description": "Zenodo release metadata for the GWAM software package stored under C:/Models/GWAM. Mint the DOI from the next public GitHub release and then update the F1000 software-availability section to cite the resulting archive record.",
+  "upload_type": "software",
+  "access_right": "open",
+  "creators": [
+    {
+      "name": "Ahmad, Mahmood",
+      "affiliation": "Royal Free Hospital"
+    },
+    {
+      "name": "Kumar, Niraj",
+      "affiliation": "Royal Free Hospital"
+    },
+    {
+      "name": "Dar, Bilaal",
+      "affiliation": "King's College Medical School"
+    },
+    {
+      "name": "Khan, Laiba",
+      "affiliation": "Royal Free Hospital"
+    },
+    {
+      "name": "Woo, Andrew",
+      "affiliation": "St George's Medical School"
+    }
+  ],
+  "keywords": [
+    "GWAM",
+    "GWAM",
+    "software",
+    "reproducibility",
+    "F1000Research"
+  ],
+  "notes": "Prepared locally to reduce DOI-minting friction for the F1000 submission bundle."
+}
