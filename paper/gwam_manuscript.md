@@ -4,9 +4,9 @@
 
 **Authors:** Mahmood Ahmad^1^ [Corresponding author]
 
-**Affiliation:** ^1^ Independent Researcher, London, United Kingdom
+**Affiliation:** ^1^ Royal Free Hospital, London, United Kingdom
 
-**Corresponding author email:** mahmood.saffari@outlook.com
+**Corresponding author email:** mahmood.ahmad2@nhs.net
 
 **ORCID:** 0009-0003-7781-4478
 
