@@ -1095,15 +1095,19 @@ def main() -> int:
                 cross_prob_020 = 0.0
                 cross_prob_020_unclipped = 0.0
 
-            analysis_name = str(clean["Analysis.name"].iloc[0]) if "Analysis.name" in clean.columns else ""
-            subgroup = str(clean["Subgroup"].iloc[0]) if "Subgroup" in clean.columns else ""
+            # Upstream filters may reduce clean to empty; re-check before
+            # positional access. (Sentinel P1-empty-dataframe-access.)
+            if len(clean) == 0:
+                continue
+            analysis_name = str(clean["Analysis.name"].iat[0]) if "Analysis.name" in clean.columns else ""
+            subgroup = str(clean["Subgroup"].iat[0]) if "Subgroup" in clean.columns else ""
             analysis_group = (
-                str(clean["Analysis.group"].iloc[0]) if "Analysis.group" in clean.columns else ""
+                str(clean["Analysis.group"].iat[0]) if "Analysis.group" in clean.columns else ""
             )
             analysis_number = (
-                str(clean["Analysis.number"].iloc[0]) if "Analysis.number" in clean.columns else ""
+                str(clean["Analysis.number"].iat[0]) if "Analysis.number" in clean.columns else ""
             )
-            review_doi = str(clean["review_doi"].iloc[0]) if "review_doi" in clean.columns else ""
+            review_doi = str(clean["review_doi"].iat[0]) if "review_doi" in clean.columns else ""
 
             row: dict[str, Any] = {
                 "dataset": file_path.stem,
