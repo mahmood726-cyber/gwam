@@ -23,9 +23,10 @@ import json
 import math
 import re
 import time
-import defusedxml.ElementTree as ET
 from pathlib import Path
 from typing import Any
+
+import defusedxml.ElementTree as ET
 
 import pyreadr
 import pandas as pd

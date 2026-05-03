@@ -1,7 +1,7 @@
 # Requires Python >= 3.10 (uses X | Y union type syntax)
 
 numpy==2.2.6
-requests==2.32.5
+requests==2.33.0  # CVE-2026-25645 fixed in 2.33.0 (extract_zipped_paths temp-file race)
 pandas==2.3.3
 pyreadr==0.5.3
 scipy==1.15.2
