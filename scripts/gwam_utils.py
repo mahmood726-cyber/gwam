@@ -7,7 +7,8 @@ import math
 import re
 import sys
 import time
-from typing import Any, Iterable
+from dataclasses import dataclass
+from typing import Any, Iterable, Mapping, Sequence
 
 if sys.version_info < (3, 10):
     raise SystemExit("GWAM requires Python >= 3.10 (uses X | Y union type syntax).")
@@ -491,3 +492,215 @@ def request_json_with_retry(
     if last_error is None:
         raise RuntimeError("request_json_with_retry: no attempts made")
     raise last_error
+
+
+# ---------------------------------------------------------------------------
+# Reusable GWAM correction API
+# ---------------------------------------------------------------------------
+#
+# The deterministic core of GWAM is a weighted correction: studies are
+# partitioned into three integrity strata (linked-PMID, results-only, and
+# fully-latent "ghost" protocols) using registry enrollment as the weight, and
+# the corrected pooled mean is the enrollment-weighted average of each
+# stratum's assumed mean. Historically this math lived only inside
+# ``model_gwam.main()`` (CSV in / JSON out). The functions below expose it as
+# an importable, side-effect-free API so callers can run the correction
+# directly on in-memory rows. The arithmetic is intentionally identical to
+# ``model_gwam.py`` so refactoring introduces no numeric drift.
+
+
+@dataclass(frozen=True)
+class GwamResult:
+    """Result of a deterministic GWAM correction.
+
+    Attributes:
+        lambda_pmid_only: Enrollment-weighted fraction of studies with a linked
+            results PMID (strictest integrity ratio).
+        lambda_non_ghost: Enrollment-weighted fraction of non-ghost studies
+            (linked-PMID plus results-only).
+        mu_published: The published pooled effect passed in.
+        mu_gwam_null_point: Deterministic GWAM-corrected pooled mean under the
+            supplied stratum means (default: ghost/results-only mean = 0).
+        weight_pmid_only: Total enrollment weight of the linked-PMID stratum.
+        weight_results_only: Total enrollment weight of the results-only
+            (no PMID) stratum.
+        weight_ghost: Total enrollment weight of the ghost stratum.
+        weight_total: Sum of all stratum weights.
+        n_pmid_only: Count of studies in the linked-PMID stratum.
+        n_results_only: Count of studies in the results-only stratum.
+        n_ghost: Count of studies in the ghost stratum.
+    """
+
+    lambda_pmid_only: float
+    lambda_non_ghost: float
+    mu_published: float
+    mu_gwam_null_point: float
+    weight_pmid_only: float
+    weight_results_only: float
+    weight_ghost: float
+    weight_total: float
+    n_pmid_only: int
+    n_results_only: int
+    n_ghost: int
+
+    def to_dict(self) -> dict[str, float | int]:
+        """Return a plain-dict view suitable for JSON serialisation."""
+        return {
+            "lambda_pmid_only": self.lambda_pmid_only,
+            "lambda_non_ghost": self.lambda_non_ghost,
+            "mu_published": self.mu_published,
+            "mu_gwam_null_point": self.mu_gwam_null_point,
+            "weight_pmid_only": self.weight_pmid_only,
+            "weight_results_only": self.weight_results_only,
+            "weight_ghost": self.weight_ghost,
+            "weight_total": self.weight_total,
+            "n_pmid_only": self.n_pmid_only,
+            "n_results_only": self.n_results_only,
+            "n_ghost": self.n_ghost,
+        }
+
+
+def partition_registry_weights(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    weight_column: str = "weight_n",
+) -> tuple[list[float], list[float], list[float]]:
+    """Partition registry rows into (pmid_only, results_only, ghost) weight lists.
+
+    Mirrors the stratification logic in ``model_gwam.main()``:
+    ghost protocols form their own stratum; non-ghost rows are split by
+    ``has_pmid``; non-ghost rows lacking a PMID (with or without posted
+    results) fall into the results-only stratum.
+
+    Args:
+        rows: Iterable of mapping-like registry rows (e.g. ``csv.DictReader``).
+        weight_column: Column holding a positive, finite numeric weight.
+
+    Returns:
+        Three lists of floats: ``(pmid_weights, results_only_weights,
+        ghost_weights)``.
+
+    Raises:
+        ValueError: If ``rows`` is empty, the weight column is missing, or any
+            weight is non-numeric, non-finite, or <= 0.
+    """
+    if not rows:
+        raise ValueError("Registry rows are empty.")
+    if weight_column not in rows[0]:
+        raise ValueError(f"Weight column '{weight_column}' not found in rows.")
+
+    pmid_weights: list[float] = []
+    results_only_weights: list[float] = []
+    ghost_weights: list[float] = []
+    for row_idx, row in enumerate(rows, start=2):  # row 2 = first data row after header
+        raw_weight = row.get(weight_column)
+        try:
+            weight = float(raw_weight)  # type: ignore[arg-type]
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                f"Non-numeric weight '{raw_weight}' in row {row_idx}, "
+                f"column '{weight_column}'."
+            ) from exc
+        if not math.isfinite(weight) or weight <= 0:
+            raise ValueError(
+                f"Invalid weight {weight} in row {row_idx}, column '{weight_column}'."
+            )
+        is_ghost = parse_bool(row.get("is_ghost_protocol", ""))
+        has_pmid = parse_bool(row.get("has_pmid", ""))
+        if is_ghost:
+            ghost_weights.append(weight)
+        elif has_pmid:
+            pmid_weights.append(weight)
+        else:
+            # Non-ghost rows without a PMID (results-only or missing flags)
+            # are treated as observed-unknown.
+            results_only_weights.append(weight)
+    return pmid_weights, results_only_weights, ghost_weights
+
+
+def gwam_correct(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    published_mu: float,
+    weight_column: str = "weight_n",
+    ghost_mu: float = 0.0,
+    results_only_mode: str = "as_unknown",
+    results_only_mu: float = 0.0,
+) -> GwamResult:
+    """Compute the deterministic GWAM correction from registry rows.
+
+    This is the importable equivalent of the point-estimate layer in
+    ``model_gwam.py``. It computes the two integrity ratios and the
+    enrollment-weighted corrected pooled mean::
+
+        mu_gwam = (w_pmid * mu_published
+                   + w_results_only * mu_results_only
+                   + w_ghost * ghost_mu) / w_total
+
+    where ``mu_results_only == mu_published`` under ``results_only_mode
+    == "as_observed"`` and ``results_only_mu`` otherwise.
+
+    Args:
+        rows: Registry rows (mapping-like) with ``is_ghost_protocol``,
+            ``has_pmid`` and a positive weight column.
+        published_mu: Published pooled effect (e.g. Hedges g). Must be finite.
+        weight_column: Column holding the study weight (default ``weight_n``).
+        ghost_mu: Assumed mean effect for ghost studies (default 0.0).
+        results_only_mode: ``"as_unknown"`` (use ``results_only_mu``) or
+            ``"as_observed"`` (treat results-only studies at ``published_mu``).
+        results_only_mu: Assumed mean for results-only studies under
+            ``as_unknown`` (default 0.0).
+
+    Returns:
+        A :class:`GwamResult`.
+
+    Raises:
+        ValueError: On empty input, missing/invalid weights, non-finite
+            ``published_mu``, unknown ``results_only_mode``, or a non-positive
+            total weight.
+    """
+    if not math.isfinite(float(published_mu)):
+        raise ValueError(f"published_mu must be finite, got {published_mu!r}.")
+    if results_only_mode not in {"as_unknown", "as_observed"}:
+        raise ValueError(
+            f"results_only_mode must be 'as_unknown' or 'as_observed', "
+            f"got {results_only_mode!r}."
+        )
+
+    pmid_weights, results_only_weights, ghost_weights = partition_registry_weights(
+        rows, weight_column=weight_column
+    )
+
+    w_pmid = float(sum(pmid_weights))
+    w_results_only = float(sum(results_only_weights))
+    w_ghost = float(sum(ghost_weights))
+    w_total = w_pmid + w_results_only + w_ghost
+    if not math.isfinite(w_total) or w_total <= 0:
+        raise ValueError(f"Total weight is invalid ({w_total}); check input data.")
+
+    lambda_pmid_only = w_pmid / w_total
+    lambda_non_ghost = (w_pmid + w_results_only) / w_total
+
+    mu_published = float(published_mu)
+    mu_results_only = (
+        mu_published if results_only_mode == "as_observed" else float(results_only_mu)
+    )
+    mu_gwam_null = (
+        w_pmid * mu_published
+        + w_results_only * mu_results_only
+        + w_ghost * float(ghost_mu)
+    ) / w_total
+
+    return GwamResult(
+        lambda_pmid_only=lambda_pmid_only,
+        lambda_non_ghost=lambda_non_ghost,
+        mu_published=mu_published,
+        mu_gwam_null_point=mu_gwam_null,
+        weight_pmid_only=w_pmid,
+        weight_results_only=w_results_only,
+        weight_ghost=w_ghost,
+        weight_total=w_total,
+        n_pmid_only=len(pmid_weights),
+        n_results_only=len(results_only_weights),
+        n_ghost=len(ghost_weights),
+    )

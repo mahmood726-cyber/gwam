@@ -23,7 +23,12 @@ from pathlib import Path
 
 import numpy as np
 
-from gwam_utils import build_environment_metadata, parse_bool
+from gwam_utils import (
+    build_environment_metadata,
+    gwam_correct,
+    parse_bool,
+    partition_registry_weights,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -92,60 +97,48 @@ def main() -> int:
     if args.weight_column not in rows[0]:
         raise ValueError(f"Weight column '{args.weight_column}' not found in CSV.")
 
-    pmid_weights: list[float] = []
-    results_only_weights: list[float] = []
-    ghost_weights: list[float] = []
-    n_with_pmid = 0
-    n_results_only = 0
+    # Diagnostic-only counters that the reusable API does not track. The
+    # weight partitioning and lambda/mu arithmetic below is delegated to
+    # gwam_utils.gwam_correct() so the CLI and the importable API stay in sync.
     n_ghost_no_pmid_results = 0
-    for row_idx, row in enumerate(rows, start=2):  # row 2 = first data row (after header)
-        raw_weight = row[args.weight_column]
-        try:
-            weight = float(raw_weight)
-        except (TypeError, ValueError) as exc:
-            raise ValueError(
-                f"Non-numeric weight '{raw_weight}' in row {row_idx}, column '{args.weight_column}'."
-            ) from exc
-        if not math.isfinite(weight) or weight <= 0:
-            raise ValueError(
-                f"Invalid weight {weight} in row {row_idx}, column '{args.weight_column}'."
-            )
-        is_ghost = parse_bool(row.get("is_ghost_protocol", ""))
-        has_pmid = parse_bool(row.get("has_pmid", ""))
-        has_results = parse_bool(row.get("has_results", ""))
-        if is_ghost:
-            ghost_weights.append(weight)
-            if (not has_pmid) and has_results:
+    for row in rows:
+        if parse_bool(row.get("is_ghost_protocol", "")):
+            if (not parse_bool(row.get("has_pmid", ""))) and parse_bool(
+                row.get("has_results", "")
+            ):
                 n_ghost_no_pmid_results += 1
-        else:
-            if has_pmid:
-                pmid_weights.append(weight)
-                n_with_pmid += 1
-            elif has_results:
-                results_only_weights.append(weight)
-                n_results_only += 1
-            else:
-                # Non-ghost rows with missing publication flags are treated as observed unknown.
-                results_only_weights.append(weight)
-                n_results_only += 1
 
-    w_pmid = float(np.sum(pmid_weights))
-    w_results_only = float(np.sum(results_only_weights))
-    w_ghost = float(np.sum(ghost_weights))
-    w_total = w_pmid + w_results_only + w_ghost
+    result = gwam_correct(
+        rows,
+        published_mu=float(args.published_mu),
+        weight_column=args.weight_column,
+        ghost_mu=args.ghost_mu,
+        results_only_mode=args.results_only_mode,
+        results_only_mu=args.results_only_mu,
+    )
 
-    if not math.isfinite(w_total) or w_total <= 0:
-        raise ValueError(f"Total weight is invalid ({w_total}); check input data.")
+    # Per-study weight lists (original registry order) for the Monte-Carlo
+    # simulation path below. partition_registry_weights() preserves the same
+    # iteration order the summation loop used, so simulation draws are
+    # unchanged.
+    _pmid_weights, results_only_weights, ghost_weights = partition_registry_weights(
+        rows, weight_column=args.weight_column
+    )
+    w_pmid = result.weight_pmid_only
+    w_results_only = result.weight_results_only
+    w_ghost = result.weight_ghost
+    w_total = result.weight_total
+    n_with_pmid = result.n_pmid_only
+    n_results_only = result.n_results_only
 
-    lambda_pmid_only = w_pmid / w_total
-    lambda_non_ghost = (w_pmid + w_results_only) / w_total
+    lambda_pmid_only = result.lambda_pmid_only
+    lambda_non_ghost = result.lambda_non_ghost
     if lambda_pmid_only == 0:
         print("WARNING: lambda_pmid_only=0 -- all studies are ghost/results-only. GWAM correction is undefined.")
     if lambda_non_ghost == 0:
         print("WARNING: lambda_non_ghost=0 -- all studies are ghosts. GWAM correction is undefined.")
-    mu_published = float(args.published_mu)
-    mu_results_only = mu_published if args.results_only_mode == "as_observed" else float(args.results_only_mu)
-    mu_gwam_null = (w_pmid * mu_published + w_results_only * mu_results_only + w_ghost * args.ghost_mu) / w_total
+    mu_published = result.mu_published
+    mu_gwam_null = result.mu_gwam_null_point
 
     rng = np.random.default_rng(args.seed)
     mu_sim = np.full(args.sim_n, (w_pmid * mu_published) / w_total, dtype=float)
@@ -180,9 +173,9 @@ def main() -> int:
         "n_trials_results_only_no_pmid": n_results_only,
         "n_trials_ghost_with_results_no_pmid": n_ghost_no_pmid_results,
         "n_trials_observed_non_ghost_proxy": n_with_pmid + n_results_only,
-        "n_trials_pmid_only": len(pmid_weights),
-        "n_trials_results_only": len(results_only_weights),
-        "n_trials_ghost_proxy": len(ghost_weights),
+        "n_trials_pmid_only": result.n_pmid_only,
+        "n_trials_results_only": result.n_results_only,
+        "n_trials_ghost_proxy": result.n_ghost,
         "weights": {
             "pmid_only": w_pmid,
             "results_only_no_pmid": w_results_only,
