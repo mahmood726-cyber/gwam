@@ -143,7 +143,65 @@ Outputs:
 - `data/analysis/<intervention>_<condition>_gwam.json`
 - `data/analysis/simulation_<intervention>_<condition>.json`
 
-## 6) Pairwise70 real-data benchmark
+## 6) Quick reproducible benchmark (bundled data, no external downloads)
+
+Every dataset needed for this benchmark ships in `data/raw/`, so it runs
+offline in a few seconds with no CT.gov / PubMed access and no Monte Carlo:
+
+```bash
+python scripts/run_bundled_benchmark.py \
+  --output-csv reports/bundled_benchmark.csv \
+  --output-json reports/bundled_benchmark.json
+```
+
+It applies the deterministic GWAM correction (`gwam_utils.gwam_correct`) to
+each bundled intervention/condition registry CSV and prints an aligned table:
+
+```
+dataset                            k    pmid  res  ghost  lam_pmid  lam_ngh  attenu  mu_src
+----------------------------------------------------------------------------------------------------
+escitalopram__depression           18   4     9    5      0.0959    0.8758   0.0959  documented
+pregabalin__neuropathic_pain       35   1     25   9      0.0140    0.7848   0.0140  normalised(1.0)
+sertraline__depression             108  64    0    44     0.7971    0.7971   0.7971  normalised(1.0)
+```
+
+Columns:
+- `lam_pmid` / `lam_ngh` — enrollment-weighted integrity ratios
+  (`lambda_pmid_only`, `lambda_non_ghost`).
+- `attenu` — the GWAM correction factor `mu_gwam / mu_published` under the
+  default null-ghost assumption. Because it is `published_mu`-independent, the
+  cross-dataset comparison is reproducible without a per-dataset literature
+  estimate.
+- `mu_src` — `documented` when the repo records a verified published pooled
+  effect for that pair (e.g. escitalopram/depression, `log(1.29)`); otherwise
+  `normalised(1.0)`, meaning the corrected value is a **structural attenuation
+  factor only**, not a scientific effect-size claim.
+
+The output is fully deterministic: identical inputs always yield identical
+numbers.
+
+### Programmatic API
+
+The same correction is available as an importable function:
+
+```python
+import csv
+from scripts.gwam_utils import gwam_correct
+
+with open("data/raw/escitalopram__depression.csv", newline="", encoding="utf-8") as fh:
+    rows = list(csv.DictReader(fh))
+
+result = gwam_correct(rows, published_mu=0.25464221837358075)
+print(result.lambda_pmid_only, result.mu_gwam_null_point)
+print(result.to_dict())
+```
+
+`gwam_correct()` returns a frozen `GwamResult` dataclass and validates its
+inputs (empty rows, missing/invalid weights, non-finite `published_mu`,
+unknown `results_only_mode`). `partition_registry_weights()` exposes the
+underlying three-stratum split.
+
+## 7) Pairwise70 real-data benchmark
 
 Run all binary Cochrane analyses from Pairwise70 with RE, selection-IPW RE,
 PET-PEESE, and GWAM shrinkage sensitivity:
