@@ -86,6 +86,10 @@ def main() -> int:
         raise ValueError(f"--sim-n={args.sim_n} must be at least 2 for meaningful Monte Carlo.")
     if args.sim_n > 10_000_000:
         raise ValueError(f"--sim-n={args.sim_n} exceeds maximum of 10,000,000.")
+    if not math.isfinite(args.published_mu):
+        raise ValueError(f"--published-mu={args.published_mu} must be finite.")
+    if not args.registry_csv.is_file():
+        raise FileNotFoundError(f"Registry CSV not found: {args.registry_csv}")
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
 
     with args.registry_csv.open("r", newline="", encoding="utf-8") as handle:

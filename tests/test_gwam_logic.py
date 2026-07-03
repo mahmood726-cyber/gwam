@@ -591,6 +591,52 @@ class TestModelGWAMScript(unittest.TestCase):
             self.assertAlmostEqual(payload["weights"]["integrity_ratio_lambda_pmid_only"], 0.0)
             self.assertAlmostEqual(payload["weights"]["integrity_ratio_lambda_non_ghost"], 0.0)
 
+    def test_model_gwam_missing_csv_fails_clearly(self) -> None:
+        """A missing registry CSV yields a clear FileNotFoundError, not a raw open() traceback."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            proc = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPTS_DIR / "model_gwam.py"),
+                    "--registry-csv", str(tmp / "does_not_exist.csv"),
+                    "--published-mu", "0.3",
+                    "--sim-n", "10",
+                    "--output-json", str(tmp / "out.json"),
+                ],
+                capture_output=True,
+                text=True,
+            )
+            self.assertNotEqual(proc.returncode, 0)
+            self.assertIn("Registry CSV not found", proc.stderr)
+
+    def test_model_gwam_nonfinite_mu_fails_clearly(self) -> None:
+        """A non-finite --published-mu is rejected before any computation."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+            csv_path = tmp / "reg.csv"
+            rows = [
+                {"is_ghost_protocol": "false", "has_pmid": "true", "has_results": "true", "weight_n": "100"},
+            ]
+            with csv_path.open("w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
+                writer.writeheader()
+                writer.writerows(rows)
+            proc = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPTS_DIR / "model_gwam.py"),
+                    "--registry-csv", str(csv_path),
+                    "--published-mu", "nan",
+                    "--sim-n", "10",
+                    "--output-json", str(tmp / "out.json"),
+                ],
+                capture_output=True,
+                text=True,
+            )
+            self.assertNotEqual(proc.returncode, 0)
+            self.assertIn("must be finite", proc.stderr)
+
 
 class TestRunWorkflowGuards(unittest.TestCase):
     def test_published_mu_scope_mismatch_fails_fast(self) -> None:
