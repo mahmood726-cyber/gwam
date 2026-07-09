@@ -1,0 +1,11 @@
+Panel,Stratum / drug–condition,n,λ,Published effect (log scale),GWAM result
+Applications,Escitalopram / depression,18 trials,0.096,0.255 (OR 1.29),"0.025 (95% SI −0.041, 0.087)"
+Applications,Pregabalin / neuropathic pain,35 trials,0.014,0.916 (RR 2.50),"0.013 (95% SI −0.029, 0.058)"
+Benchmark (overall),All Cochrane meta-analyses,"7,467",0.871 (median),median |Δ| 0.055,7.9% attenuated <0.10 (95% CI 5.1–11.0)
+Benchmark by λ̂ source,Exact NCT linkage,"1,438",0.950,—,3.1% attenuated <0.10
+Benchmark by λ̂ source,CT.gov query linkage,"5,569",0.861,—,9.1% attenuated <0.10
+Benchmark by λ̂ source,Transport proxy,86,0.950,—,10.5% attenuated <0.10
+Benchmark by λ̂ source,Default (0.70),374,0.700,—,8.3% attenuated <0.10
+Benchmark by study count,k = 2,"2,895",0.894,—,6.3% attenuated <0.10
+Benchmark by study count,k = 3,"1,409",0.880,—,7.9% attenuated <0.10
+Benchmark by study count,k ≥ 4,"3,163",0.845,—,9.4% attenuated <0.10

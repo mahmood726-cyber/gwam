@@ -1,0 +1,80 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<style>
+@page { size: A4; margin: 15mm 16mm 16mm 16mm; }
+* { box-sizing: border-box; }
+body { font-family: Georgia,'Times New Roman',serif; color:#0A1020; line-height:1.5; font-size:10.3pt; margin:0; }
+.hero { background:#182650; color:#fff; padding:14px 18px; display:flex; justify-content:space-between; align-items:flex-start; }
+.hero .j { font-family:Georgia,serif; font-size:20px; font-weight:bold; letter-spacing:.06em; }
+.hero .sub { font-size:8.5px; color:#C9D2EA; letter-spacing:.12em; text-transform:uppercase; margin-top:3px; }
+.hero .meta { text-align:right; font-size:8.5px; color:#C9D2EA; font-family:system-ui,sans-serif; line-height:1.5; }
+.titlewrap { border-bottom:2.5px solid #182650; padding:14px 0 12px; margin-bottom:12px; }
+h1 { font-size:16.5pt; line-height:1.25; margin:0 0 8px; color:#0A1020; }
+.byline { font-family:system-ui,sans-serif; font-size:9px; color:#444; }
+.byline a { color:#384C82; text-decoration:none; }
+.section-label { font-family:system-ui,sans-serif; font-size:8px; font-weight:700; letter-spacing:.2em;
+  text-transform:uppercase; color:#182650; margin:16px 0 6px; border-bottom:1px solid #D8DEEC; padding-bottom:3px; }
+.abstract p { margin:0 0 6px; text-align:justify; }
+.ahead { font-weight:bold; color:#182650; }
+.vabox { text-align:center; margin:8px 0 2px; }
+.vabox img { width:100%; border:1px solid #D8DEEC; border-radius:4px; }
+.cap { font-family:system-ui,sans-serif; font-size:8px; color:#555; margin:4px 2px 0; line-height:1.4; }
+figure { margin:8px 0; text-align:center; }
+figure img { width:86%; }
+table { width:100%; border-collapse:collapse; font-family:system-ui,sans-serif; font-size:7.6px; margin-top:4px; }
+th { background:#182650; color:#fff; text-align:left; padding:4px 5px; font-weight:600; }
+td { padding:3px 5px; border-bottom:.5px solid #E2E6F0; vertical-align:top; }
+tr.panelstart td { border-top:1.2px solid #384C82; }
+tbody tr:nth-child(even) td { background:#F6F8FC; }
+.refs ol { list-style:none; padding:0; margin:0; font-family:system-ui,sans-serif; font-size:8px; color:#333; }
+.refs li { margin-bottom:5px; padding-left:16px; text-indent:-16px; line-height:1.45; }
+.rn { color:#182650; font-weight:700; }
+.meta-grid { font-family:system-ui,sans-serif; font-size:8px; color:#444; display:grid;
+  grid-template-columns:auto 1fr; gap:2px 12px; margin-top:4px; }
+.meta-grid dt { font-weight:600; color:#0A1020; }
+.flag { background:#FBF7EC; border-left:3px solid #B98A2E; padding:6px 9px; font-family:system-ui,sans-serif;
+  font-size:8px; color:#5b4410; margin-top:8px; border-radius:0 3px 3px 0; }
+.footer { margin-top:14px; border-top:1px solid #D8DEEC; padding-top:6px; font-family:system-ui,sans-serif;
+  font-size:7.5px; color:#777; display:flex; justify-content:space-between; }
+</style></head><body>
+<div class="hero"><div><div class="j">Gnosis</div><div class="sub">Global Health Evidence &middot; Diamond Open Access</div></div>
+<div class="meta">Methods Note<br>Vol. 2 No. 4 &middot; 2026<br>Published 2026-06-16</div></div>
+
+<div class="titlewrap">
+<h1>GWAM: Ghost-Weighted Aggregate Meta-Analysis for registry-based publication-bias sensitivity</h1>
+<div class="byline"><b>Mahmood Ahmad</b> &nbsp;
+<a href="https://orcid.org/0009-0003-7781-4478">ORCID 0009-0003-7781-4478</a> &middot; Royal Free Hospital, London, United Kingdom &middot;
+<a href="mailto:mahmood.ahmad2@nhs.net">mahmood.ahmad2@nhs.net</a></div>
+</div>
+
+<div class="vabox"><img src="figures/visual_abstract.png" alt="Visual abstract">
+<div class="cap">Visual abstract. Registry classification &rarr; integrity ratio &lambda; &rarr; &lambda;-scaled effect, with the escitalopram application and the Pairwise70 benchmark. All values are verbatim from the verified GWAM source pack.</div></div>
+
+<div class="section-label">Abstract</div>
+<div class="abstract"><p><span class="ahead">Background.</span> Publication bias threatens the validity of meta-analysis, yet routine detection tools (funnel-plot asymmetry, trim-and-fill) rest on assumptions that are hard to verify. Trial registries offer an external anchor for how much of the evidence base is actually visible.</p><p><span class="ahead">Methods.</span> GWAM (Ghost-Weighted Aggregate Meta-Analysis) is a registry-anchored sensitivity method. It classifies ClinicalTrials.gov records as ghost (completed, with no publication and no posted results), results-posted, or published (PMID-linked); computes an enrollment-weighted integrity ratio λ (the published-participant fraction); and scales the published pooled effect by λ. A Monte-Carlo layer and a hierarchical variance-propagation extension carry the uncertainty about unobserved trials.</p><p><span class="ahead">Results.</span> For escitalopram in depression (18 trials) λ was 0.096; the GWAM-adjusted log-odds-ratio was 0.025 (95% SI −0.041 to 0.087; SI denotes a simulation interval, not a confidence interval) versus a published random-effects log-odds-ratio of 0.255 (OR 1.29). Across a benchmark of 7,467 meta-analyses from 398 Cochrane reviews the median λ was 0.871, and 7.9% of meta-analyses with a random-effects estimate of magnitude at least 0.10 were attenuated below 0.10. For pregabalin (35 trials, log-risk-ratio) λ was 0.014, flagged as likely incomplete PMID linkage. In simulation (2,000 replications) bias was minimal at μ=0 but grew negative for μ&gt;0 (−0.162 at μ=0.2) and raw coverage fell to 7.1%; the hierarchical extension restored near-nominal coverage.</p><p><span class="ahead">Conclusions.</span> GWAM is a transparent, reproducible registry-anchored sensitivity analysis, best interpreted as a conservative framework that complements existing publication-bias methods; its performance depends on the quality of ClinicalTrials.gov publication linkage.</p></div>
+
+<div class="section-label">Pipeline</div>
+<figure><img src="figures/figure1_pipeline.png" alt="GWAM pipeline">
+<figcaption class="cap">Figure 1. GWAM pipeline overview. The seven-stage workflow runs from the ClinicalTrials.gov registry query through trial classification (published / results-posted / ghost), enrollment-weight computation, integrity-ratio (λ) calculation, GWAM point estimation, Monte-Carlo simulation-interval construction, and the optional hierarchical variance-propagation extension.</figcaption></figure>
+
+<div class="section-label">Table 1 &mdash; Integrity ratio (&lambda;) and GWAM attenuation</div>
+<table><thead><tr><th>Panel</th><th>Stratum / drug–condition</th><th>n</th><th>λ</th><th>Published effect (log scale)</th><th>GWAM result</th></tr></thead><tbody><tr class="panelstart"><td>Applications</td><td>Escitalopram / depression</td><td>18 trials</td><td>0.096</td><td>0.255 (OR 1.29)</td><td>0.025 (95% SI −0.041, 0.087)</td></tr><tr><td>Applications</td><td>Pregabalin / neuropathic pain</td><td>35 trials</td><td>0.014</td><td>0.916 (RR 2.50)</td><td>0.013 (95% SI −0.029, 0.058)</td></tr><tr class="panelstart"><td>Benchmark (overall)</td><td>All Cochrane meta-analyses</td><td>7,467</td><td>0.871 (median)</td><td>median |Δ| 0.055</td><td>7.9% attenuated &lt;0.10 (95% CI 5.1–11.0)</td></tr><tr class="panelstart"><td>Benchmark by λ̂ source</td><td>Exact NCT linkage</td><td>1,438</td><td>0.950</td><td>—</td><td>3.1% attenuated &lt;0.10</td></tr><tr><td>Benchmark by λ̂ source</td><td>CT.gov query linkage</td><td>5,569</td><td>0.861</td><td>—</td><td>9.1% attenuated &lt;0.10</td></tr><tr><td>Benchmark by λ̂ source</td><td>Transport proxy</td><td>86</td><td>0.950</td><td>—</td><td>10.5% attenuated &lt;0.10</td></tr><tr><td>Benchmark by λ̂ source</td><td>Default (0.70)</td><td>374</td><td>0.700</td><td>—</td><td>8.3% attenuated &lt;0.10</td></tr><tr class="panelstart"><td>Benchmark by study count</td><td>k = 2</td><td>2,895</td><td>0.894</td><td>—</td><td>6.3% attenuated &lt;0.10</td></tr><tr><td>Benchmark by study count</td><td>k = 3</td><td>1,409</td><td>0.880</td><td>—</td><td>7.9% attenuated &lt;0.10</td></tr><tr><td>Benchmark by study count</td><td>k ≥ 4</td><td>3,163</td><td>0.845</td><td>—</td><td>9.4% attenuated &lt;0.10</td></tr></tbody></table>
+<div class="cap">λ = enrollment-weighted integrity ratio (published-participant fraction); for applications λ is the directly measured λ_pmid, for the benchmark it is the proxy λ̂. Effects are on the log-OR (escitalopram) or log-RR (pregabalin) scale; positive values indicate treatment superiority. SI = simulation interval (not a confidence interval). “% attenuated &lt;0.10” = share of meta-analyses with |random-effects estimate| ≥ 0.10 whose GWAM-adjusted |estimate| fell below 0.10. Δ = GWAM − random-effects shift. Pregabalin&#x27;s λ = 0.014 reflects incomplete ClinicalTrials.gov PMID linkage, not true non-publication.</div>
+
+<div class="section-label">References</div>
+<div class="refs"><ol><li><span class="rn">1.</span> Egger M, Davey Smith G, Schneider M, Minder C. Bias in meta-analysis detected by a simple, graphical test. <i>BMJ.</i> 1997;315(7109):629&#8211;634. doi:10.1136/bmj.315.7109.629. PMID: 9310563.</li><li><span class="rn">2.</span> Duval S, Tweedie R. Trim and fill: a simple funnel-plot-based method of testing and adjusting for publication bias in meta-analysis. <i>Biometrics.</i> 2000;56(2):455&#8211;463. doi:10.1111/j.0006-341X.2000.00455.x. PMID: 10877304.</li><li><span class="rn">3.</span> Cipriani A, Furukawa TA, Salanti G, et al. Comparative efficacy and acceptability of 21 antidepressant drugs for the acute treatment of adults with major depressive disorder: a systematic review and network meta-analysis. <i>Lancet.</i> 2018;391(10128):1357&#8211;1366. doi:10.1016/S0140-6736(17)32802-7. PMID: 29477251.</li></ol></div>
+
+<div class="section-label">Article information</div>
+<dl class="meta-grid">
+<dt>Journal</dt><dd>Gnosis &mdash; Global Health Evidence (ISSN: pending)</dd>
+<dt>Section</dt><dd>Methods Note</dd>
+<dt>Identifier</dt><dd>DOI: pending (suppressed site-wide)</dd>
+<dt>Licence</dt><dd>CC BY 4.0 &mdash; Copyright (c) 2026 Mahmood Ahmad</dd>
+<dt>Code &amp; data</dt><dd>https://github.com/mahmood726-cyber/GWAM</dd>
+</dl>
+<div class="flag"><b>Honest-reporting note.</b> The 95% interval on the GWAM-adjusted estimate is a
+<b>simulation interval (SI)</b>, not a confidence interval. The integrity ratio &lambda; is a <b>lower bound</b> on
+the true publication fraction because ClinicalTrials.gov PMID linkage is incomplete; GWAM is a conservative
+<b>sensitivity</b> framework that complements, and does not replace, existing publication-bias methods.</div>
+
+<div class="footer"><span>Gnosis &middot; Diamond Open Access</span><span>Numbers verbatim from the verified GWAM source pack</span></div>
+</body></html>
