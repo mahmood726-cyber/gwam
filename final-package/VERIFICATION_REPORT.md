@@ -1,9 +1,9 @@
 # GWAM — Verification report (finalization to FINAL form)
 
 **Date:** 2026-06-20 · **Verifier:** Claude (Opus 4.8), in-session
-**Source pack:** `F:\Models\GWAM` (located by search of F:\ and C:\Users\mahmo for `gwam` / `ghost-weighted`)
+**Source pack:** this repository (`GWAM`), located by workspace search for `gwam` / `ghost-weighted`
 **Live preliminary article:** Synthēsis OJS, slug `gwam-ghost-weighted-meta-analysis`, Vol. 2 No. 4 (June 2026),
-Methods Note, published 2026-06-16 (captured HTML: `C:\Users\mahmo\AppData\Local\Temp\gw.html`).
+Methods Note, published 2026-06-16 (captured HTML saved to a local temp file).
 
 ---
 
